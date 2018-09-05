@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<unload unload_date="2018-03-16 21:34:31">
+<sys_remote_update_set action="INSERT_OR_UPDATE">
+<application display_value="Global">global</application>
+<application_name>Global</application_name>
+<application_scope>global</application_scope>
+<application_version/>
+<collisions/>
+<commit_date/>
+<deleted/>
+<description>This is the content that you should have after completing the second part of the lab.</description>
+<inserted/>
+<name>CCW0460 2 - Lab Part 2</name>
+<origin_sys_id/>
+<parent display_value=""/>
+<release_date/>
+<remote_base_update_set display_value=""/>
+<remote_parent_id/>
+<remote_sys_id>c33ecec24f38d7402debb7a18110c7da</remote_sys_id>
+<state>loaded</state>
+<summary/>
+<sys_class_name>sys_remote_update_set</sys_class_name>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>cf2731074fbc5b402debb7a18110c78c</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<update_set display_value=""/>
+<update_source display_value=""/>
+<updated/>
+</sys_remote_update_set>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sp_widget_da494b5e4ff01b402debb7a18110c724</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sp_widget"&gt;&lt;sp_widget action="INSERT_OR_UPDATE"&gt;&lt;category&gt;standard&lt;/category&gt;&lt;client_script&gt;&lt;![CDATA[function ($scope, spUtil, $location, spAriaFocusManager) {
+	$scope.$on('data_table.click', function(e, parms){
+		var p = $scope.data.page_id || 'form';
+		var s = {id: p, table: parms.table, sys_id: parms.sys_id, view: 'sp'};
+		var newURL = $location.search(s);
+		spAriaFocusManager.navigateToLink(newURL.url());
+	});
+	
+	$scope.showTable = false;
+}]]&gt;&lt;/client_script&gt;&lt;controller_as&gt;c&lt;/controller_as&gt;&lt;css/&gt;&lt;data_table&gt;sp_instance_table&lt;/data_table&gt;&lt;demo_data/&gt;&lt;description&gt;Embeds the data table and donut chart in a single widget&lt;/description&gt;&lt;docs/&gt;&lt;field_list&gt;table,filter,field_list,maximum_entries,order_by,order_direction,title,color,glyph,sp_page,display_field&lt;/field_list&gt;&lt;has_preview&gt;false&lt;/has_preview&gt;&lt;id/&gt;&lt;internal&gt;false&lt;/internal&gt;&lt;link/&gt;&lt;name&gt;Combined Donut and Table&lt;/name&gt;&lt;option_schema&gt;[{"hint":"Size of the \"donut hole,\" default is 50%","name":"donut_cutout_percent","section":"Presentation","label":"Donut Cutout Percent","type":"integer"},{"hint":"Percent of a circle the chart should consume. Min 25%","name":"arc_percent","section":"Presentation","label":"Arc Percent","type":"integer"},{"hint":"Percentage to rotate the chart from 0 degrees vertical","name":"rotation_offset","section":"Presentation","label":"Rotation Offset","type":"integer"},{"hint":"Number of milliseconds it takes to animate the chart","name":"animation_speed","section":"Presentation","label":"Animation Speed","type":"choice","choices":[{"label":"0","value":"0"},{"label":"500","value":"500"},{"label":"750","value":"750"},{"label":"1000","value":"1000"},{"label":"1250","value":"1250"},{"label":"1500","value":"1500"}]},{"hint":"Identify the page to target when the chart is clicked. Default is \"list\"","name":"target_page","section":"Behavior","label":"Target Page","type":"string"}]&lt;/option_schema&gt;&lt;public&gt;false&lt;/public&gt;&lt;roles/&gt;&lt;script&gt;&lt;![CDATA[(function(){
+	/*  "use strict"; - linter issues */
+	// populate the 'data' object
+	var sp_page = $sp.getValue('sp_page');
+	var pageGR = new GlideRecord('sp_page');
+	pageGR.get(sp_page);
+	data.page_id = pageGR.id.getDisplayValue();
+	$sp.getValues(data);
+	if (data.field_list) {
+		data.fields_array = data.field_list.split(',');
+	} else {
+		data.field_list = $sp.getListColumns(data.table);
+	}
+	
+	data.display_field = $sp.getValue('display_field');
+
+	if (input) {
+		data.p = input.p;
+		data.o = input.o;
+		data.d = input.d;
+		data.q = input.q;
+	}
+	data.p = data.p || 1;
+	data.o = data.o || $sp.getValue('order_by');
+	data.d = data.d || $sp.getValue('order_direction');
+
+	data.page_index = (data.p - 1);
+	data.window_size = $sp.getValue('maximum_entries') || 10;
+	data.window_start  = (data.page_index * data.window_size);
+	data.window_end = (((data.page_index + 1) * data.window_size));
+	data.filter = $sp.getValue("filter");
+
+	var gr = new GlideRecordSecure(data.table);
+	if (!gr.isValid()) {
+		data.invalid_table = true;
+		data.table_label = data.table;
+		return;
+	}
+	data.table_label = gr.getLabel();
+
+	var widgetParams = {
+		table: data.table,
+		fields: data.field_list,
+		o: data.o,
+		d: data.d,
+		filter: data.filter,
+		window_size: data.window_size,
+		view: 'sp',
+		title: options.title,
+		show_breadcrumbs: true
+	};
+	data.dataTableWidget = $sp.getWidget('widget-data-table', widgetParams);
+	
+	var donutParms = {
+		table: data.table,
+		filter: data.filter,
+		display_field: data.display_field
+	};
+	
+	// Copy options
+	for (var opt in options){
+		donutParms[opt] = options[opt];
+	}
+	
+	data.donutWidget = $sp.getWidget('donut-chart-20',donutParms);
+})();]]&gt;&lt;/script&gt;&lt;servicenow&gt;false&lt;/servicenow&gt;&lt;sys_class_name&gt;sp_widget&lt;/sys_class_name&gt;&lt;sys_created_by&gt;nicholas.yancer&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2018-03-14 19:37:50&lt;/sys_created_on&gt;&lt;sys_id&gt;da494b5e4ff01b402debb7a18110c724&lt;/sys_id&gt;&lt;sys_mod_count&gt;7&lt;/sys_mod_count&gt;&lt;sys_name&gt;Combined Donut and Table&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sp_widget_da494b5e4ff01b402debb7a18110c724&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;nicholas.yancer&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2018-03-14 20:07:03&lt;/sys_updated_on&gt;&lt;template&gt;&lt;![CDATA[&lt;div&gt;
+  &lt;div class="alert alert-danger" ng-if="data.invalid_table"&gt;
+    ${Table not defined} '{{data.table_label}}'
+  &lt;/div&gt;
+  &lt;!-- Toggle between chart and table view. The toggle will set the value of the showTable variable to true or false when clicked. --&gt;
+  &lt;toggle-switch watch-var="showTable" title="Chart or Table" label-true="Table" label-false="Chart"&gt;&lt;/toggle-switch&gt;
+  &lt;!-- If showTable is false, show the chart. Note the use of ng-if here. The angular chartJS code checks on the chart at regular intervals.
+		If the chart canvas is hidden when that check is performed there is an error and the next time you try to show the chart it will not render correctly. --&gt;
+  &lt;div ng-if="!showTable"&gt;
+    &lt;sp-widget ng-if="!!data.donutWidget" widget="data.donutWidget"&gt;&lt;/sp-widget&gt;
+  &lt;/div&gt;
+  
+  &lt;!-- If showTable is true, then show the data table widget. Note that it is okay to use ng-show here,
+	as there is no requirement that the data table is visible for other processes. --&gt;
+  &lt;div ng-show="showTable"&gt;
+  	&lt;sp-widget ng-if="data.dataTableWidget" widget="data.dataTableWidget"&gt;&lt;/sp-widget&gt;
+  &lt;/div&gt;
+&lt;/div&gt;]]&gt;&lt;/template&gt;&lt;/sp_widget&gt;&lt;/record_update&gt;</payload>
+<payload_hash>-149128697</payload_hash>
+<remote_update_set display_value="CCW0460 2 - Lab Part 2">cf2731074fbc5b402debb7a18110c78c</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>032731074fbc5b402debb7a18110c78f</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>162261f887a0000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<table/>
+<target_name>Combined Donut and Table</target_name>
+<type>Widget</type>
+<update_domain>global</update_domain>
+<update_guid>46ff4b92ce341b40ef73f8113b97022e</update_guid>
+<update_guid_history>46ff4b92ce341b40ef73f8113b97022e:-149128697,7a5dc7923f341b4079ac6a073835bf4c:-1457629155,e92c03121e341b40fd8b665460245c26:-149128697,530c8b5235341b405f7dfba6d3398fee:-1457629155,f38b4f12ad341b402ba23e16faf3051c:-149128697,996a4fde27f01b4018d593d45a131414:763804051,8b794b1eb8f01b4083561aab7445aa0a:-846585512,9e498fde22f01b40712e07a5ee1d9012:-939004658</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sp_instance_table_2a9903124f341b402debb7a18110c72f</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sp_instance_table"&gt;&lt;sp_instance_table action="INSERT_OR_UPDATE"&gt;&lt;active&gt;true&lt;/active&gt;&lt;class_name/&gt;&lt;color&gt;default&lt;/color&gt;&lt;css/&gt;&lt;display_field&gt;os&lt;/display_field&gt;&lt;field_list&gt;name,os,short_description,operational_status&lt;/field_list&gt;&lt;filter/&gt;&lt;glyph/&gt;&lt;id/&gt;&lt;maximum_entries&gt;10&lt;/maximum_entries&gt;&lt;order&gt;1&lt;/order&gt;&lt;order_by&gt;name&lt;/order_by&gt;&lt;order_direction&gt;asc&lt;/order_direction&gt;&lt;roles/&gt;&lt;short_description/&gt;&lt;size&gt;md&lt;/size&gt;&lt;sp_column display_value="1"&gt;bf9d7dc64ff4d7402debb7a18110c7ef&lt;/sp_column&gt;&lt;sp_page/&gt;&lt;sp_widget display_value="Combined Donut and Table"&gt;da494b5e4ff01b402debb7a18110c724&lt;/sp_widget&gt;&lt;sys_class_name&gt;sp_instance_table&lt;/sys_class_name&gt;&lt;sys_created_by&gt;nicholas.yancer&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2018-03-14 19:39:14&lt;/sys_created_on&gt;&lt;sys_id&gt;2a9903124f341b402debb7a18110c72f&lt;/sys_id&gt;&lt;sys_mod_count&gt;1&lt;/sys_mod_count&gt;&lt;sys_name&gt;Windows Servers&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sp_instance_table_2a9903124f341b402debb7a18110c72f&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;nicholas.yancer&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2018-03-14 19:43:54&lt;/sys_updated_on&gt;&lt;table&gt;cmdb_ci_win_server&lt;/table&gt;&lt;title&gt;Windows Servers&lt;/title&gt;&lt;url/&gt;&lt;widget_parameters&gt;&lt;![CDATA[{
+	"donut_cutout_percent": {
+		"value": 25,
+		"displayValue": "25"
+	},
+	"arc_percent": {
+		"value": 50,
+		"displayValue": "50"
+	},
+	"rotation_offset": {
+		"value": 25,
+		"displayValue": "25"
+	},
+	"animation_speed": {
+		"value": "750",
+		"displayValue": "750"
+	},
+	"target_page": {
+		"value": "",
+		"displayValue": ""
+	}
+}]]&gt;&lt;/widget_parameters&gt;&lt;/sp_instance_table&gt;&lt;sys_translated_text action="delete_multiple" query="documentkey=2a9903124f341b402debb7a18110c72f"/&gt;&lt;/record_update&gt;</payload>
+<payload_hash>1745179668</payload_hash>
+<remote_update_set display_value="CCW0460 2 - Lab Part 2">cf2731074fbc5b402debb7a18110c78c</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>072731074fbc5b402debb7a18110c78e</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>162260a54fc0000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<table>cmdb_ci_win_server</table>
+<target_name>Windows Servers</target_name>
+<type>Instance with Table</type>
+<update_domain>global</update_domain>
+<update_guid>4baa47124b341b40237c59015a65ec91</update_guid>
+<update_guid_history>4baa47124b341b40237c59015a65ec91:1745179668,ee99031244341b40f45612be5b060f30:-337000556</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>m2m_sp_widget_dependency_976b07524f341b402debb7a18110c75d</name>
+<payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="m2m_sp_widget_dependency"><m2m_sp_widget_dependency action="INSERT_OR_UPDATE"><sp_dependency display_value="css-toggle-switch">9010160a4f38d7402debb7a18110c762</sp_dependency><sp_widget display_value="Combined Donut and Table">da494b5e4ff01b402debb7a18110c724</sp_widget><sys_class_name>m2m_sp_widget_dependency</sys_class_name><sys_created_by>nicholas.yancer</sys_created_by><sys_created_on>2018-03-14 19:47:12</sys_created_on><sys_id>976b07524f341b402debb7a18110c75d</sys_id><sys_mod_count>0</sys_mod_count><sys_name>css-toggle-switch.Combined Donut and Table</sys_name><sys_package display_value="Global" source="global">global</sys_package><sys_policy/><sys_scope display_value="Global">global</sys_scope><sys_update_name>m2m_sp_widget_dependency_976b07524f341b402debb7a18110c75d</sys_update_name><sys_updated_by>nicholas.yancer</sys_updated_by><sys_updated_on>2018-03-14 19:47:12</sys_updated_on></m2m_sp_widget_dependency></record_update>]]></payload>
+<payload_hash>1604177068</payload_hash>
+<remote_update_set display_value="CCW0460 2 - Lab Part 2">cf2731074fbc5b402debb7a18110c78c</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>0b2731074fbc5b402debb7a18110c78d</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>162260d5b8c0000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<table/>
+<target_name>css-toggle-switch.Combined Donut and Table</target_name>
+<type>Widget Dependency</type>
+<update_domain>global</update_domain>
+<update_guid>5f6b0752ee341b4028a0bb69d5234b5e</update_guid>
+<update_guid_history>5f6b0752ee341b4028a0bb69d5234b5e:1604177068</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sp_dependency_9010160a4f38d7402debb7a18110c762</name>
+<payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_dependency"><sp_dependency action="INSERT_OR_UPDATE"><module>css-toggle-switch</module><name>css-toggle-switch</name><page_load>false</page_load><sp_portals/><sys_class_name>sp_dependency</sys_class_name><sys_created_by>nicholas.yancer</sys_created_by><sys_created_on>2018-03-13 20:51:03</sys_created_on><sys_id>9010160a4f38d7402debb7a18110c762</sys_id><sys_mod_count>1</sys_mod_count><sys_name>css-toggle-switch</sys_name><sys_package display_value="Global" source="global">global</sys_package><sys_policy/><sys_scope display_value="Global">global</sys_scope><sys_update_name>sp_dependency_9010160a4f38d7402debb7a18110c762</sys_update_name><sys_updated_by>nicholas.yancer</sys_updated_by><sys_updated_on>2018-03-14 18:33:06</sys_updated_on></sp_dependency></record_update>]]></payload>
+<payload_hash>729776630</payload_hash>
+<remote_update_set display_value="CCW0460 2 - Lab Part 2">cf2731074fbc5b402debb7a18110c78c</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>432731074fbc5b402debb7a18110c78e</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>16225c984590000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<table/>
+<target_name>css-toggle-switch</target_name>
+<type>Widget Dependency</type>
+<update_domain>global</update_domain>
+<update_guid>f17a3a56f4f01b405fd1dc70bbc5914d</update_guid>
+<update_guid_history>f17a3a56f4f01b405fd1dc70bbc5914d:729776630,8170d60ab238d7406a5a5467fa4b713b:1706578905</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>m2m_sp_dependency_js_include_685d7e564ff01b402debb7a18110c739</name>
+<payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="m2m_sp_dependency_js_include"><m2m_sp_dependency_js_include action="INSERT_OR_UPDATE"><order>100</order><sp_dependency display_value="css-toggle-switch">9010160a4f38d7402debb7a18110c762</sp_dependency><sp_js_include display_value="Toggle Switch JS">b78a7a564ff01b402debb7a18110c778</sp_js_include><sys_class_name>m2m_sp_dependency_js_include</sys_class_name><sys_created_by>nicholas.yancer</sys_created_by><sys_created_on>2018-03-14 18:45:34</sys_created_on><sys_id>685d7e564ff01b402debb7a18110c739</sys_id><sys_mod_count>0</sys_mod_count><sys_name>css-toggle-switch.Toggle Switch JS</sys_name><sys_package display_value="Global" source="global">global</sys_package><sys_policy/><sys_scope display_value="Global">global</sys_scope><sys_update_name>m2m_sp_dependency_js_include_685d7e564ff01b402debb7a18110c739</sys_update_name><sys_updated_by>nicholas.yancer</sys_updated_by><sys_updated_on>2018-03-14 18:45:34</sys_updated_on></m2m_sp_dependency_js_include></record_update>]]></payload>
+<payload_hash>-1914711188</payload_hash>
+<remote_update_set display_value="CCW0460 2 - Lab Part 2">cf2731074fbc5b402debb7a18110c78c</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>472731074fbc5b402debb7a18110c78d</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>16225d4ee5f0000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<table/>
+<target_name>css-toggle-switch.Toggle Switch JS</target_name>
+<type>Dependency JS Includes</type>
+<update_domain>global</update_domain>
+<update_guid>ac5d7e56adf01b4077baf339f258053a</update_guid>
+<update_guid_history>ac5d7e56adf01b4077baf339f258053a:-1914711188</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sp_rel_widget_clone_92498fde4ff01b402debb7a18110c714</name>
+<payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_rel_widget_clone"><sp_rel_widget_clone action="INSERT_OR_UPDATE"><child display_value="Copy of Data Table from Instance Definit">da494b5e4ff01b402debb7a18110c724</child><cloned>2018-03-14 19:37:50</cloned><last_validated>2018-03-14 19:37:50</last_validated><parent display_value="Data Table from Instance Definition">38058ff1cb11020000f8d856634c9c8c</parent><payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;sp_widget&gt;&lt;category&gt;standard&lt;/category&gt;&lt;client_script&gt;&lt;![CDATA[function ($scope, spUtil, $location, spAriaFocusManager) {
+	$scope.$on('data_table.click', function(e, parms){
+		var p = $scope.data.page_id || 'form';
+		var s = {id: p, table: parms.table, sys_id: parms.sys_id, view: 'sp'};
+		var newURL = $location.search(s);
+		spAriaFocusManager.navigateToLink(newURL.url());
+	});
+}]]&gt;&lt;/client_script&gt;&lt;controller_as/&gt;&lt;css/&gt;&lt;data_table&gt;sp_instance_table&lt;/data_table&gt;&lt;demo_data/&gt;&lt;description/&gt;&lt;docs/&gt;&lt;field_list&gt;table,filter,field_list,maximum_entries,order_by,order_direction,title,color,glyph,sp_page&lt;/field_list&gt;&lt;has_preview&gt;false&lt;/has_preview&gt;&lt;id/&gt;&lt;internal&gt;false&lt;/internal&gt;&lt;link/&gt;&lt;name&gt;Data Table from Instance Definition&lt;/name&gt;&lt;option_schema/&gt;&lt;public&gt;false&lt;/public&gt;&lt;roles/&gt;&lt;script&gt;&lt;![CDATA[(function(){
+	/*  "use strict"; - linter issues */
+	// populate the 'data' object
+	var sp_page = $sp.getValue('sp_page');
+	var pageGR = new GlideRecord('sp_page');
+	pageGR.get(sp_page);
+	data.page_id = pageGR.id.getDisplayValue();
+	$sp.getValues(data);
+	if (data.field_list) {
+		data.fields_array = data.field_list.split(',');
+	} else {
+		data.field_list = $sp.getListColumns(data.table);
+	}
+
+	if (input) {
+		data.p = input.p;
+		data.o = input.o;
+		data.d = input.d;
+		data.q = input.q;
+	}
+	data.p = data.p || 1;
+	data.o = data.o || $sp.getValue('order_by');
+	data.d = data.d || $sp.getValue('order_direction');
+
+	data.page_index = (data.p - 1);
+	data.window_size = $sp.getValue('maximum_entries') || 10;
+	data.window_start  = (data.page_index * data.window_size);
+	data.window_end = (((data.page_index + 1) * data.window_size));
+	data.filter = $sp.getValue("filter");
+
+	var gr = new GlideRecordSecure(data.table);
+	if (!gr.isValid()) {
+		data.invalid_table = true;
+		data.table_label = data.table;
+		return;
+	}
+	data.table_label = gr.getLabel();
+
+	var widgetParams = {
+		table: data.table,
+		fields: data.field_list,
+		o: data.o,
+		d: data.d,
+		filter: data.filter,
+		window_size: data.window_size,
+		view: 'sp',
+		title: options.title,
+		show_breadcrumbs: true
+	};
+	data.dataTableWidget = $sp.getWidget('widget-data-table', widgetParams);
+})();]]&gt;&lt;/script&gt;&lt;servicenow&gt;true&lt;/servicenow&gt;&lt;sys_class_name&gt;sp_widget&lt;/sys_class_name&gt;&lt;sys_created_by&gt;admin&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2015-07-17 21:37:50&lt;/sys_created_on&gt;&lt;sys_id&gt;38058ff1cb11020000f8d856634c9c8c&lt;/sys_id&gt;&lt;sys_mod_count&gt;229&lt;/sys_mod_count&gt;&lt;sys_name&gt;Data Table from Instance Definition&lt;/sys_name&gt;&lt;sys_package display_value="Service Portal - Core" source="com.glide.service-portal"&gt;5ff1c211c581030033995e88a53e1b23&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sp_widget_38058ff1cb11020000f8d856634c9c8c&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;admin&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2017-08-24 19:03:13&lt;/sys_updated_on&gt;&lt;template&gt;&lt;![CDATA[&lt;div&gt;
+  &lt;div class="alert alert-danger" ng-if="data.invalid_table"&gt;
+    ${Table not defined} '{{data.table_label}}'
+  &lt;/div&gt;
+  &lt;sp-widget ng-if="data.dataTableWidget" widget="data.dataTableWidget"&gt;&lt;/sp-widget&gt;
+&lt;/div&gt;]]&gt;&lt;/template&gt;&lt;/sp_widget&gt;</payload><sys_class_name>sp_rel_widget_clone</sys_class_name><sys_created_by>nicholas.yancer</sys_created_by><sys_created_on>2018-03-14 19:37:50</sys_created_on><sys_id>92498fde4ff01b402debb7a18110c714</sys_id><sys_mod_count>0</sys_mod_count><sys_name>da494b5e4ff01b402debb7a18110c724</sys_name><sys_package display_value="Global" source="global">global</sys_package><sys_policy/><sys_scope display_value="Global">global</sys_scope><sys_update_name>sp_rel_widget_clone_92498fde4ff01b402debb7a18110c714</sys_update_name><sys_updated_by>nicholas.yancer</sys_updated_by><sys_updated_on>2018-03-14 19:37:50</sys_updated_on></sp_rel_widget_clone></record_update>]]></payload>
+<payload_hash>-1716841514</payload_hash>
+<remote_update_set display_value="CCW0460 2 - Lab Part 2">cf2731074fbc5b402debb7a18110c78c</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>4f2731074fbc5b402debb7a18110c78e</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>1622604ca160000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<table/>
+<target_name>da494b5e4ff01b402debb7a18110c724</target_name>
+<type>Widget Clone</type>
+<update_domain>global</update_domain>
+<update_guid>d2498fde8ef01b40c56ad65c70728815</update_guid>
+<update_guid_history>d2498fde8ef01b40c56ad65c70728815:-1716841514</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>m2m_sp_dependency_css_include_c04116824f38d7402debb7a18110c731</name>
+<payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="m2m_sp_dependency_css_include"><m2m_sp_dependency_css_include action="INSERT_OR_UPDATE"><order>100</order><sp_css_include display_value="css-toggle-switch.css">39a0da4a4f38d7402debb7a18110c7b6</sp_css_include><sp_dependency display_value="css-toggle-switch">9010160a4f38d7402debb7a18110c762</sp_dependency><sys_class_name>m2m_sp_dependency_css_include</sys_class_name><sys_created_by>nicholas.yancer</sys_created_by><sys_created_on>2018-03-13 20:54:32</sys_created_on><sys_id>c04116824f38d7402debb7a18110c731</sys_id><sys_mod_count>0</sys_mod_count><sys_name>css-toggle-switch.css.css-toggle-switch</sys_name><sys_package display_value="Global" source="global">global</sys_package><sys_policy/><sys_scope display_value="Global">global</sys_scope><sys_update_name>m2m_sp_dependency_css_include_c04116824f38d7402debb7a18110c731</sys_update_name><sys_updated_by>nicholas.yancer</sys_updated_by><sys_updated_on>2018-03-13 20:54:32</sys_updated_on></m2m_sp_dependency_css_include></record_update>]]></payload>
+<payload_hash>949389342</payload_hash>
+<remote_update_set display_value="CCW0460 2 - Lab Part 2">cf2731074fbc5b402debb7a18110c78c</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>832731074fbc5b402debb7a18110c78d</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>1622124a57b0000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<table/>
+<target_name>css-toggle-switch.css.css-toggle-switch</target_name>
+<type>Dependency CSS Includes</type>
+<update_domain>global</update_domain>
+<update_guid>8041528ac338d7406322c086111a3066</update_guid>
+<update_guid_history>8041528ac338d7406322c086111a3066:949389342</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sp_js_include_b78a7a564ff01b402debb7a18110c778</name>
+<payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_js_include"><sp_js_include action="INSERT_OR_UPDATE"><display_name>Toggle Switch JS</display_name><source>local</source><sys_class_name>sp_js_include</sys_class_name><sys_created_by>nicholas.yancer</sys_created_by><sys_created_on>2018-03-14 18:45:34</sys_created_on><sys_id>b78a7a564ff01b402debb7a18110c778</sys_id><sys_mod_count>0</sys_mod_count><sys_name>Toggle Switch JS</sys_name><sys_package display_value="Global" source="global">global</sys_package><sys_policy/><sys_scope display_value="Global">global</sys_scope><sys_ui_script display_value="toggleSwitch">17ca3e564ff01b402debb7a18110c70e</sys_ui_script><sys_update_name>sp_js_include_b78a7a564ff01b402debb7a18110c778</sys_update_name><sys_updated_by>nicholas.yancer</sys_updated_by><sys_updated_on>2018-03-14 18:45:34</sys_updated_on><url/></sp_js_include></record_update>]]></payload>
+<payload_hash>985691225</payload_hash>
+<remote_update_set display_value="CCW0460 2 - Lab Part 2">cf2731074fbc5b402debb7a18110c78c</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>8b2731074fbc5b402debb7a18110c78e</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>16225d4ee300000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<table/>
+<target_name>Toggle Switch JS</target_name>
+<type>JS Include</type>
+<update_domain>global</update_domain>
+<update_guid>6c5d7e5629f01b40cd043a397e321538</update_guid>
+<update_guid_history>6c5d7e5629f01b40cd043a397e321538:985691225</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sp_css_include_39a0da4a4f38d7402debb7a18110c7b6</name>
+<payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_css_include"><sp_css_include action="INSERT_OR_UPDATE"><name>css-toggle-switch.css</name><source>url</source><sp_css/><sys_class_name>sp_css_include</sys_class_name><sys_created_by>nicholas.yancer</sys_created_by><sys_created_on>2018-03-13 20:54:32</sys_created_on><sys_id>39a0da4a4f38d7402debb7a18110c7b6</sys_id><sys_mod_count>0</sys_mod_count><sys_name>css-toggle-switch.css</sys_name><sys_package display_value="Global" source="global">global</sys_package><sys_policy/><sys_scope display_value="Global">global</sys_scope><sys_update_name>sp_css_include_39a0da4a4f38d7402debb7a18110c7b6</sys_update_name><sys_updated_by>nicholas.yancer</sys_updated_by><sys_updated_on>2018-03-13 20:54:32</sys_updated_on><url>https://cdn.jsdelivr.net/npm/css-toggle-switch@4.1.0/dist/toggle-switch.css</url></sp_css_include></record_update>]]></payload>
+<payload_hash>-556107128</payload_hash>
+<remote_update_set display_value="CCW0460 2 - Lab Part 2">cf2731074fbc5b402debb7a18110c78c</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>8f2731074fbc5b402debb7a18110c78d</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>1622124a5290000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<table/>
+<target_name>css-toggle-switch.css</target_name>
+<type>CSS Include</type>
+<update_domain>global</update_domain>
+<update_guid>c44116829138d7403227b4bc658a5030</update_guid>
+<update_guid_history>c44116829138d7403227b4bc658a5030:-556107128</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sys_ui_script_17ca3e564ff01b402debb7a18110c70e</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_ui_script"&gt;&lt;sys_ui_script action="INSERT_OR_UPDATE"&gt;&lt;active&gt;true&lt;/active&gt;&lt;description/&gt;&lt;global&gt;false&lt;/global&gt;&lt;name&gt;toggleSwitch&lt;/name&gt;&lt;script&gt;&lt;![CDATA[angular.module('css-toggle-switch',[]).directive('toggleSwitch',[function(){
+	
+	var defaults = {
+		labelTrue: 'On',
+		labelFalse: 'Off'
+	};
+	
+	return {
+		restrict: 'E',
+		scope: {
+			watchVar: '=',
+			title: '@'
+		},
+		template: '&lt;div&gt;' +
+		'&lt;label class="switch-light" onclick=""&gt;' +
+		'&lt;input type="checkbox" ng-model="watchVar"&gt;' +
+		'&lt;strong&gt;' +
+		'{{ title }}' +
+			'&lt;/strong&gt;' +
+			'&lt;span class="alert alert-light"&gt;' +
+			'&lt;span&gt;{{ labelFalse }}&lt;/span&gt;' +
+				'&lt;span&gt;{{ labelTrue }}&lt;/span&gt;' +
+					'&lt;a class="btn btn-primary"&gt;&lt;/a&gt;' +
+					'&lt;/span&gt;' +
+					'&lt;/label&gt;' +
+					'&lt;/div&gt;' +
+					'&lt;style&gt;' +
+					'.switch-light {' +
+						' max-width: 125px; '+
+						'}' +
+						'.switch-light .alert-light {' +
+							'      border: 1px solid #e2e2e2;' +
+							'}' +
+							'&lt;/style&gt;',
+		compile: function(){
+			return {
+				pre: function(scope,el,attrs){
+					// Set defaults for labels if nothing passed into the directive
+					scope.labelTrue = attrs.labelTrue || defaults.labelTrue;
+					scope.labelFalse = attrs.labelFalse || defaults.labelFalse;
+				},
+				post: function(scope,el,attrs){
+					
+				}
+			};
+		}
+	};
+}]);]]&gt;&lt;/script&gt;&lt;script_name/&gt;&lt;sys_class_name&gt;sys_ui_script&lt;/sys_class_name&gt;&lt;sys_created_by&gt;nicholas.yancer&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2018-03-14 18:45:08&lt;/sys_created_on&gt;&lt;sys_id&gt;17ca3e564ff01b402debb7a18110c70e&lt;/sys_id&gt;&lt;sys_mod_count&gt;16&lt;/sys_mod_count&gt;&lt;sys_name&gt;toggleSwitch&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_ui_script_17ca3e564ff01b402debb7a18110c70e&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;nicholas.yancer&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2018-03-14 20:06:37&lt;/sys_updated_on&gt;&lt;use_scoped_format&gt;false&lt;/use_scoped_format&gt;&lt;/sys_ui_script&gt;&lt;/record_update&gt;</payload>
+<payload_hash>1813863602</payload_hash>
+<remote_update_set display_value="CCW0460 2 - Lab Part 2">cf2731074fbc5b402debb7a18110c78c</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>c32731074fbc5b402debb7a18110c78f</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>162261f21440000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<table/>
+<target_name>toggleSwitch</target_name>
+<type>UI Script</type>
+<update_domain>global</update_domain>
+<update_guid>77df0f56e2341b40cc19d6035e713651</update_guid>
+<update_guid_history>77df0f56e2341b40cc19d6035e713651:1813863602,aa8f0b9222341b40c3383daf5b5bc08f:2097361307,394e47167f341b401aac73fa8f24b86b:1657042914,452e871664341b40c188eec04cb78dc5:1692247518,6dfd0f92bf341b40250a9abf224f0def:632714244,3dcd4b92d4341b4042c7f5e082f286d6:310971680,0cad8b5265341b40ca6b8edde6673cf5:1004885592,9b8dc79247341b40890528f6b0649702:1476738676,982d8b52dd341b40f03f162c205ba1f2:-1062310012,54220b9a49f01b40888a4d0f5dffa08f:-728504628,40e1879aa1f01b406b802246f955a228:-269645806,5b61c39a68f01b40f56496543d80c8a1:-1208331846,8d60cfd6fbf01b400d98d2a4eef36281:1761903769,3def7e567df01b40a3df2b0c71b9ed02:-1474994680,1a8f3e56e8f01b40fb5fa92bce442afe:125869049,bf3f3a1a5af01b4087b086e51c099635:-1819798969,d63d3a56cff01b406add2a02d608ef82:868557821</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>DELETE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sp_instance_table_c6fd314e4ff4d7402debb7a18110c71d</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sp_instance_table"&gt;&lt;sp_instance_table action="DELETE"&gt;&lt;active&gt;true&lt;/active&gt;&lt;class_name/&gt;&lt;color&gt;default&lt;/color&gt;&lt;css/&gt;&lt;display_field&gt;os&lt;/display_field&gt;&lt;field_list/&gt;&lt;filter/&gt;&lt;glyph/&gt;&lt;id/&gt;&lt;maximum_entries&gt;5&lt;/maximum_entries&gt;&lt;order&gt;1&lt;/order&gt;&lt;order_by/&gt;&lt;order_direction&gt;asc&lt;/order_direction&gt;&lt;roles/&gt;&lt;short_description/&gt;&lt;size&gt;md&lt;/size&gt;&lt;sp_column display_value="1"&gt;bf9d7dc64ff4d7402debb7a18110c7ef&lt;/sp_column&gt;&lt;sp_page/&gt;&lt;sp_widget display_value="Donut Chart 2.0"&gt;1144750a4ff4d7402debb7a18110c76e&lt;/sp_widget&gt;&lt;sys_class_name&gt;sp_instance_table&lt;/sys_class_name&gt;&lt;sys_created_by&gt;nicholas.yancer&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2018-03-13 19:30:18&lt;/sys_created_on&gt;&lt;sys_id&gt;c6fd314e4ff4d7402debb7a18110c71d&lt;/sys_id&gt;&lt;sys_mod_count&gt;1&lt;/sys_mod_count&gt;&lt;sys_name&gt;Windows Servers&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sp_instance_table_c6fd314e4ff4d7402debb7a18110c71d&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;nicholas.yancer&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2018-03-13 19:35:23&lt;/sys_updated_on&gt;&lt;table&gt;cmdb_ci_win_server&lt;/table&gt;&lt;title&gt;Windows Servers&lt;/title&gt;&lt;url/&gt;&lt;widget_parameters&gt;&lt;![CDATA[{
+	"donut_cutout_percent": {
+		"value": 25,
+		"displayValue": "25"
+	},
+	"arc_percent": {
+		"value": 100,
+		"displayValue": "100"
+	},
+	"rotation_offset": {
+		"value": 0,
+		"displayValue": "0"
+	},
+	"animation_speed": {
+		"value": "750",
+		"displayValue": "750"
+	},
+	"target_page": {
+		"value": "",
+		"displayValue": ""
+	}
+}]]&gt;&lt;/widget_parameters&gt;&lt;/sp_instance_table&gt;&lt;sys_translated_text action="delete_multiple" query="documentkey=c6fd314e4ff4d7402debb7a18110c71d"/&gt;&lt;/record_update&gt;</payload>
+<payload_hash>1673978875</payload_hash>
+<remote_update_set display_value="CCW0460 2 - Lab Part 2">cf2731074fbc5b402debb7a18110c78c</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>c72731074fbc5b402debb7a18110c78e</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>1622605df780000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<table>cmdb_ci_win_server</table>
+<target_name>Windows Servers</target_name>
+<type>Instance with Table</type>
+<update_domain>global</update_domain>
+<update_guid>63894fde2df01b40a8225c8e241e49a7</update_guid>
+<update_guid_history>63894fde2df01b40a8225c8e241e49a7:1673978875,e02f7146f9f4d740dfa80649d5bc724a:-1089036049,02fd314ebcf4d7405b388152dd57a81f:2083606036</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>m2m_sp_widget_dependency_cba3528a4f38d7402debb7a18110c774</name>
+<payload><![CDATA[<?xml version="1.0" encoding="UTF-8"?><record_update table="m2m_sp_widget_dependency"><m2m_sp_widget_dependency action="INSERT_OR_UPDATE"><sp_dependency display_value="css-toggle-switch">9010160a4f38d7402debb7a18110c762</sp_dependency><sp_widget display_value="Donut Chart 2.0">1144750a4ff4d7402debb7a18110c76e</sp_widget><sys_class_name>m2m_sp_widget_dependency</sys_class_name><sys_created_by>nicholas.yancer</sys_created_by><sys_created_on>2018-03-13 21:05:07</sys_created_on><sys_id>cba3528a4f38d7402debb7a18110c774</sys_id><sys_mod_count>0</sys_mod_count><sys_name>css-toggle-switch.Donut Chart 2.0</sys_name><sys_package display_value="Global" source="global">global</sys_package><sys_policy/><sys_scope display_value="Global">global</sys_scope><sys_update_name>m2m_sp_widget_dependency_cba3528a4f38d7402debb7a18110c774</sys_update_name><sys_updated_by>nicholas.yancer</sys_updated_by><sys_updated_on>2018-03-13 21:05:07</sys_updated_on></m2m_sp_widget_dependency></record_update>]]></payload>
+<payload_hash>-1039019014</payload_hash>
+<remote_update_set display_value="CCW0460 2 - Lab Part 2">cf2731074fbc5b402debb7a18110c78c</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-16 21:34:31</sys_created_on>
+<sys_id>cb2731074fbc5b402debb7a18110c78d</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>162212e558d0000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-16 21:34:31</sys_updated_on>
+<table/>
+<target_name>css-toggle-switch.Donut Chart 2.0</target_name>
+<type>Widget Dependency</type>
+<update_domain>global</update_domain>
+<update_guid>47a3528abf38d74097a39eabf8733876</update_guid>
+<update_guid_history>47a3528abf38d74097a39eabf8733876:-1039019014</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+</unload>

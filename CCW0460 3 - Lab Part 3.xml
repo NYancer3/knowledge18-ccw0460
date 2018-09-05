@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<unload unload_date="2018-03-27 20:16:57">
+<sys_remote_update_set action="INSERT_OR_UPDATE">
+<application display_value="Global">global</application>
+<application_name>Global</application_name>
+<application_scope>global</application_scope>
+<application_version/>
+<collisions/>
+<commit_date/>
+<deleted/>
+<description>This is the content that you should have after completing the third part of the lab.</description>
+<inserted/>
+<name>CCW0460 3 - Lab Part 3</name>
+<origin_sys_id/>
+<parent display_value=""/>
+<release_date/>
+<remote_base_update_set display_value=""/>
+<remote_parent_id/>
+<remote_sys_id>0991d7d64f341b402debb7a18110c720</remote_sys_id>
+<state>loaded</state>
+<summary/>
+<sys_class_name>sys_remote_update_set</sys_class_name>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-27 20:16:56</sys_created_on>
+<sys_id>31eecaae4fc117002debb7a18110c750</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-27 20:16:56</sys_updated_on>
+<update_set display_value=""/>
+<update_source display_value=""/>
+<updated/>
+</sys_remote_update_set>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sp_widget_1144750a4ff4d7402debb7a18110c76e</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sp_widget"&gt;&lt;sp_widget action="INSERT_OR_UPDATE"&gt;&lt;category&gt;custom&lt;/category&gt;&lt;client_script&gt;&lt;![CDATA[function(spUtil,$scope,$rootScope,$location) {
+	/* widget controller */
+	var c = this;
+	
+	// Make this async
+	c.server.update();
+	
+	c.data.chartLegend = {
+		display:true,
+		position:'bottom',
+		labels:{
+			boxWidth:15
+		}
+	};
+	
+	c.data.chartOptions = {
+		rotation:((-0.5 + (-c.data.options.chartRotation)/50)*Math.PI),
+		circumference:2*(c.data.options.chartCircumference/100)*Math.PI,
+		legend:c.data.chartLegend,
+		animation:{
+			duration: c.data.options.animate,
+			easing:'easeOutBounce'
+		},
+		cutoutPercentage:c.data.options.donut_cutout
+	};
+	
+	if (c.data.chartLabels.toString().length &gt; 250){
+		c.data.chartLegend.labels.fontSize = 10;
+	}
+	
+	c.onClick = function (points, evt) {
+		
+		if (points.length &gt; 0){
+			var filt = (!!c.data.options.filter ? c.data.options.filter + '^' : '') + c.data.options.display_field + c.data.chartLookup[points[0]._model.label];
+			
+			// If the widget options tell us we are event-driven, then emit an event.
+			if (c.data.options.event_driven == 'true'){
+				$scope.$emit('chart.click',{filter: filt});
+			} else {
+				// If not, then navigate
+				var targObj = {
+					id: c.data.targetPage,
+					table:c.data.options.table,
+					filter:filt,
+					previous_id:c.data.currentPage,
+					view:'sp'
+				};
+				$location.search(targObj);
+			}
+		}
+		
+	};
+	
+	if (!!c.data.options.table){
+		spUtil.recordWatch($scope,c.data.options.table,c.data.options.filter);
+	}
+	
+}]]&gt;&lt;/client_script&gt;&lt;controller_as&gt;c&lt;/controller_as&gt;&lt;css&gt;div.chartContainer {&amp;#13;
+ &amp;#13;
+  max-width: 500px;&amp;#13;
+  //padding: 8px;&amp;#13;
+  margin: auto !important;&amp;#13;
+  &amp;#13;
+}&lt;/css&gt;&lt;data_table&gt;sp_instance_table&lt;/data_table&gt;&lt;demo_data/&gt;&lt;description/&gt;&lt;docs/&gt;&lt;field_list&gt;title,table,filter,display_field&lt;/field_list&gt;&lt;has_preview&gt;false&lt;/has_preview&gt;&lt;id&gt;donut-chart-20&lt;/id&gt;&lt;internal&gt;false&lt;/internal&gt;&lt;link/&gt;&lt;name&gt;Donut Chart 2.0&lt;/name&gt;&lt;option_schema&gt;[{"hint":"Size of the \"donut hole,\" default is 50%","name":"donut_cutout_percent","section":"Presentation","label":"Donut Cutout Percent","type":"integer"},{"hint":"Percent of a circle the chart should consume. Min 25%","name":"arc_percent","section":"Presentation","label":"Arc Percent","type":"integer"},{"hint":"Percentage to rotate the chart from 0 degrees vertical","name":"rotation_offset","section":"Presentation","label":"Rotation Offset","type":"integer"},{"hint":"Number of milliseconds it takes to animate the chart","name":"animation_speed","section":"Presentation","label":"Animation Speed","type":"choice","choices":[{"label":"0","value":"0"},{"label":"500","value":"500"},{"label":"750","value":"750"},{"label":"1000","value":"1000"},{"label":"1250","value":"1250"},{"label":"1500","value":"1500"}]},{"hint":"Identify the page to target when the chart is clicked. Default is \"list\"","name":"target_page","section":"Behavior","label":"Target Page","type":"string"},{"hint":"Indicate whether you want to emit an event when the chart is clicked or navigate to another page","name":"event_driven","section":"Behavior","label":"Event Driven","type":"boolean"}]&lt;/option_schema&gt;&lt;public&gt;false&lt;/public&gt;&lt;roles/&gt;&lt;script&gt;&lt;![CDATA[(function() {
+	/* populate the 'data' object */
+	/* e.g., data.table = $sp.getValue('table'); */
+	
+	data.options = {};
+	
+	var table = $sp.getValue('table') || options.table || input.table;
+	var field = $sp.getValue('display_field') || options.display_field || input.display_field;
+	var filter = $sp.getValue('filter') || options.filter || input.filter;
+	
+	data.table = table;
+	data.filter = filter;
+	data.display_field = field;
+	
+	// Are we event-driven? If nothing given, default to false.
+	data.options.event_driven = options.event_driven || input.event_driven || 'false';
+	data.event_driven = data.options.event_driven;
+	
+	data.currentPage = $sp.getParameter('id');
+	
+	data.chartLabels = [];
+	data.chartData = [];
+	data.chartLookup = {};
+	
+	data.targetPage = options.target_page || input.target_page || 'list';
+	
+	// Animation Speed, default 1000
+	var anim_speed = options.animation_speed || input.animation_speed;
+	data.options.animate = parseInt(anim_speed);
+	if (isNaN(parseInt(data.options.animate))){
+		data.options.animate = 1000;
+	}
+	
+	// Having some issues when the value is 0.
+	if (!!options &amp;&amp; options.donut_cutout_percent == 0){
+		data.donut_cutout_percent = '0';
+	} else if (!!input &amp;&amp; input.donut_cutout_percent == 0){
+		data.donut_cutout_percent = '0';
+	} else {
+		data.donut_cutout_percent = options.donut_cutout_percent || input.donut_cutout_percent;
+	}
+
+	// donut_coutout_percent, default 50, min 0, max 90
+	data.options.donut_cutout = data.donut_cutout_percent;
+	data.options.orig_cutout = data.options.donut_cutout;
+	if (isNaN(parseInt(data.options.donut_cutout)) || data.options.donut_cutout &lt; 0 || data.options.donut_cutout &gt; 90){
+		data.options.donut_cutout = 50;
+	}
+	
+	// Arc percent, default 0
+	data.options.chartRotation = options.rotation_offset || input.rotation_offset || 0;
+	data.rotation_offset =  data.options.chartRotation;
+	
+	// Chart circumference, default 100. Min 25, max 100.
+	data.options.circ = options.arc_percent || input.arc_percent;
+	data.arc_percent = data.options.circ;
+	data.options.chartCircumference = parseInt(data.options.circ) || 100;
+	if (isNaN(parseInt(data.options.chartCircumference)) || data.options.chartCircumference &lt; 25 || data.options.chartCircumference &gt; 100){
+		data.options.chartCircumference = 100;
+	}
+	
+	data.title = options.title || input.title;
+	
+		// Execute async
+	if (!input){
+		return;
+	}
+	
+	console.log(data);
+	
+	function getColors(tbl,fld){
+		var retArr = [];
+		var g_colors = new GlideChartFieldColors(tbl,fld);
+		data.chartLabels.forEach(function(lbl){
+			var val = data.chartLookup[lbl];
+			var col = val.split('=');
+			col = (col.length &gt; 1 ? col[1] : col[0]).toString();
+			retArr.push(g_colors.get(col));
+		});
+		
+		console.log(retArr);
+		
+		return retArr;
+	}
+	
+	if (!!table &amp;&amp; !!field){
+		
+		
+		data.options.chartTitle = options.title || input.title || $sp.getValue('title');
+		
+		data.options.table = table;
+		data.options.display_field = field;
+		data.options.filter = filter;
+		
+		var ga = new GlideAggregate(table);
+		ga.addAggregate('COUNT',field);
+		ga.orderByAggregate('COUNT',field);
+		ga.addEncodedQuery(filter);
+		ga.query();
+		
+		var oth = 0;
+		var othItems = [];
+		
+		while (ga.next() &amp;&amp; oth &lt; 12){
+			var disp = !!ga.getDisplayValue(field) ? ga.getDisplayValue(field) : '(Empty)';
+			data.chartLabels.push(disp);
+			data.chartLookup[disp] = '=' + ga.getValue(field);
+			othItems.push(ga.getValue(field));
+			data.chartData.push(ga.getAggregate('COUNT',field));
+			oth++;
+		}
+		
+		if (oth == 12){
+			var gr = new GlideRecord(table);
+			gr.addEncodedQuery(filter);
+			gr.addQuery(field,'NOT IN',othItems.toString());
+			gr.query();
+			
+			if (gr.getRowCount() &gt; 0){
+				data.chartLabels.push('Other');
+				data.chartLookup['Other'] = 'NOT IN' + othItems;
+				data.chartData.push(gr.getRowCount());
+			}
+		}
+		
+		data.chartColors = getColors(table,field);
+		
+	}
+	
+})();]]&gt;&lt;/script&gt;&lt;servicenow&gt;false&lt;/servicenow&gt;&lt;sys_class_name&gt;sp_widget&lt;/sys_class_name&gt;&lt;sys_created_by&gt;nicholas.yancer&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2018-03-13 19:11:37&lt;/sys_created_on&gt;&lt;sys_id&gt;1144750a4ff4d7402debb7a18110c76e&lt;/sys_id&gt;&lt;sys_mod_count&gt;40&lt;/sys_mod_count&gt;&lt;sys_name&gt;Donut Chart 2.0&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sp_widget_1144750a4ff4d7402debb7a18110c76e&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;nicholas.yancer&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2018-03-16 21:08:16&lt;/sys_updated_on&gt;&lt;template&gt;&lt;![CDATA[&lt;div class="chartContainer"&gt;
+  &lt;h3 class="text-center" ng-if="!!c.data.options.chartTitle"&gt;{{ c.data.options.chartTitle }}&lt;/h3&gt;
+  &lt;canvas ng-if="!!c.data.chartData" id="pie" class="chart chart-doughnut" chart-data="c.data.chartData" chart-options="c.data.chartOptions"
+          chart-labels="c.data.chartLabels" chart-click="c.onClick" chart-colors="c.data.chartColors"&gt;
+  &lt;/canvas&gt;
+  &lt;p ng-if="c.data.chartData == ''"&gt;No data to display&lt;/p&gt;
+&lt;/div&gt;]]&gt;&lt;/template&gt;&lt;/sp_widget&gt;&lt;/record_update&gt;</payload>
+<payload_hash>2106600973</payload_hash>
+<remote_update_set display_value="CCW0460 3 - Lab Part 3">31eecaae4fc117002debb7a18110c750</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-27 20:16:56</sys_created_on>
+<sys_id>3deecaae4fc117002debb7a18110c750</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>16230a44bd40000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-27 20:16:56</sys_updated_on>
+<table/>
+<target_name>Donut Chart 2.0</target_name>
+<type>Widget</type>
+<update_domain>global</update_domain>
+<update_guid>5e21b9c37fbc5b4006ee7b44deb6d71a</update_guid>
+<update_guid_history>5e21b9c37fbc5b4006ee7b44deb6d71a:2106600973,86b1558f973c5b40a4eb9bbba555280d:-1025791955,4971dd8f943c5b4020a69bc4604689fa:-986076020,5e41954fcd3c5b40c260295fde83bd6e:401204652,f4e0598f783c5b40b885aac455a238c8:-296675243,2da0590fa03c5b40af53610702c4934f:-1258798653,e920dd0f9b3c5b40dacc8c646ff9223e:1138632004,febfc90fce3c5b409e0e0c7501f89c2d:1580756493,f4de090fae3c5b4007440ecf82b077fe:-1582161787,0077943240705b40efb38fdcc0c7d764:390275377,ab4718feb8305b401baf9459c159c4d0:1538034906,45f6d0be84305b40110629dd581664b9:-1980798601,d0a618fee1305b40b9631b066fed1d97:-65669615,c40614be85305b40b032d4350bf5609a:-1111831302,9f055c7e36305b40e983ba198f77c481:-1384236613,5e34183e1f305b40a99ef8a347574a6b:-594939240,a05b8c7606305b409ff0e7d96c881e67:-1279788356,061b84769e305b40b04a544c0fc63cef:1162164116,cd9a04769d305b40e1312aff29d07fba:-359682309,21b98c7299305b40de1a3de85e48e53d:1746286848,6f9404722a305b406cce7710dbaef042:1861593264,4e239beef47c1b404f5f587826058b39:1756833161,f103d7ea667c1b401457837f2d3447d9:-2052456061,c2a25b6e7d7c1b40edef8bbf3152c099:-200208975,7872dfaa057c1b40d66b90dddaa46270:1334312152,8de1d7ea2d7c1b40fd6ffa35bca852d1:-1970218895,8f71dfaa247c1b404c5ce9382bcb7e6b:-947227972,263197aa827c1b4092aad1b37f4c452e:-247976239,e07ec7eabe7c1b40a1e92f1520914897:-655419474,accd8baa117c1b40397196b19b07a2b8:-1535756941,1c1dcf6aa47c1b40791f0fa72030b886:743204908,db4c0f2af67c1b40a3aae15501017997:-781049629,442c876a8f7c1b406e551f90332cf8ea:-2091072925,436bcb2ac47c1b40878b64ca2dd30c63:-1463301060,6b09171e80341b402d36107683759e72:743204908,7157d31a7f341b408fa952565e02da03:-25021802,2806139a47341b4069c399aed4727da2:1192477387,e5955f5a0d341b40ae7d66225082fe0a:-1317361080,20e4fe9e38b01b402bde8ecf3c72ed65:98322712,605c314e2cf4d740015da6f2fdce131b:991966937,d8b9f5ca94f4d740109ea6b538b50d8f:-502764923</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sp_instance_table_2a9903124f341b402debb7a18110c72f</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sp_instance_table"&gt;&lt;sp_instance_table action="INSERT_OR_UPDATE"&gt;&lt;active&gt;true&lt;/active&gt;&lt;class_name/&gt;&lt;color&gt;default&lt;/color&gt;&lt;css/&gt;&lt;display_field&gt;os&lt;/display_field&gt;&lt;field_list&gt;name,os,short_description,operational_status&lt;/field_list&gt;&lt;filter/&gt;&lt;glyph/&gt;&lt;id/&gt;&lt;maximum_entries&gt;10&lt;/maximum_entries&gt;&lt;order&gt;1&lt;/order&gt;&lt;order_by&gt;name&lt;/order_by&gt;&lt;order_direction&gt;asc&lt;/order_direction&gt;&lt;roles/&gt;&lt;short_description/&gt;&lt;size&gt;md&lt;/size&gt;&lt;sp_column display_value="1"&gt;bf9d7dc64ff4d7402debb7a18110c7ef&lt;/sp_column&gt;&lt;sp_page/&gt;&lt;sp_widget display_value="Combined Donut and Table"&gt;da494b5e4ff01b402debb7a18110c724&lt;/sp_widget&gt;&lt;sys_class_name&gt;sp_instance_table&lt;/sys_class_name&gt;&lt;sys_created_by&gt;nicholas.yancer&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2018-03-14 19:39:14&lt;/sys_created_on&gt;&lt;sys_id&gt;2a9903124f341b402debb7a18110c72f&lt;/sys_id&gt;&lt;sys_mod_count&gt;4&lt;/sys_mod_count&gt;&lt;sys_name&gt;Windows Servers&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sp_instance_table_2a9903124f341b402debb7a18110c72f&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;nicholas.yancer&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2018-03-15 14:34:24&lt;/sys_updated_on&gt;&lt;table&gt;cmdb_ci_win_server&lt;/table&gt;&lt;title&gt;Windows Servers&lt;/title&gt;&lt;url/&gt;&lt;widget_parameters&gt;&lt;![CDATA[{
+	"donut_cutout_percent": {
+		"value": 25,
+		"displayValue": "25"
+	},
+	"arc_percent": {
+		"value": 50,
+		"displayValue": "50"
+	},
+	"rotation_offset": {
+		"value": 25,
+		"displayValue": "25"
+	},
+	"animation_speed": {
+		"value": "750",
+		"displayValue": "750"
+	},
+	"target_page": {
+		"value": "",
+		"displayValue": ""
+	},
+	"event_driven": {
+		"value": "true",
+		"displayValue": "true"
+	}
+}]]&gt;&lt;/widget_parameters&gt;&lt;/sp_instance_table&gt;&lt;sys_translated_text action="delete_multiple" query="documentkey=2a9903124f341b402debb7a18110c72f"/&gt;&lt;/record_update&gt;</payload>
+<payload_hash>127286337</payload_hash>
+<remote_update_set display_value="CCW0460 3 - Lab Part 3">31eecaae4fc117002debb7a18110c750</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-27 20:16:56</sys_created_on>
+<sys_id>75eecaae4fc117002debb7a18110c750</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>1622a1558690000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-27 20:16:56</sys_updated_on>
+<table>cmdb_ci_win_server</table>
+<target_name>Windows Servers</target_name>
+<type>Instance with Table</type>
+<update_domain>global</update_domain>
+<update_guid>0f6dcbaa237c1b40653b996267b6b8c6</update_guid>
+<update_guid_history>0f6dcbaa237c1b40653b996267b6b8c6:127286337,24ac8f6af67c1b4072b92fefdc4e4bca:131796089,90889bda55341b40bb4d3a3cca6172ee:127286337,4baa47124b341b40237c59015a65ec91:1745179668,ee99031244341b40f45612be5b060f30:-337000556</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sp_widget_da494b5e4ff01b402debb7a18110c724</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sp_widget"&gt;&lt;sp_widget action="INSERT_OR_UPDATE"&gt;&lt;category&gt;standard&lt;/category&gt;&lt;client_script&gt;&lt;![CDATA[function ($scope, spUtil, $location, spAriaFocusManager) {
+	/*$scope.$on('data_table.click', function(e, parms){
+		var p = $scope.data.page_id || 'form';
+		var s = {id: p, table: parms.table, sys_id: parms.sys_id, view: 'sp'};
+		var newURL = $location.search(s);
+		spAriaFocusManager.navigateToLink(newURL.url());
+	});*/
+	
+	$scope.showTable = false;
+	
+	// Watch for the chart click event.
+	$scope.$on('chart.click',function(evt,parms){
+		console.log(parms);
+		// Toggle showTable to true to show the table
+		$scope.showTable = true;
+		// Let the table know about the updated filter.
+		$scope.$broadcast('data_table.setFilter',parms.filter);
+	});
+	
+	// When the table is clicked, show the target record in a form modal
+	
+	$scope.formWidget = '';
+	
+	$scope.$on('data_table.click',function(evt,parms){
+		// Build params to get a form widget
+		var formOpts = {
+			embeddedWidgetId: 'widget-form',
+			embeddedWidgetOptions: {
+				table: parms.table,
+				sys_id: parms.sys_id,
+				view: 'sp',
+				disableUIActions: 'true',
+				hideRelatedLists: true
+			}
+		};
+		
+		// Get our widget
+		spUtil.get('widget-modal',formOpts).then(function(resp){
+			$scope.formWidget = resp;
+		});
+	});
+	
+	// Watch for the modal widget being closed
+	$scope.$on('sp.widget-modal.closed',function(){
+		$scope.formWidget = '';
+	});
+}]]&gt;&lt;/client_script&gt;&lt;controller_as&gt;c&lt;/controller_as&gt;&lt;css/&gt;&lt;data_table&gt;sp_instance_table&lt;/data_table&gt;&lt;demo_data/&gt;&lt;description&gt;Embeds the data table and donut chart in a single widget&lt;/description&gt;&lt;docs/&gt;&lt;field_list&gt;table,filter,field_list,maximum_entries,order_by,order_direction,title,color,glyph,sp_page,display_field&lt;/field_list&gt;&lt;has_preview&gt;false&lt;/has_preview&gt;&lt;id/&gt;&lt;internal&gt;false&lt;/internal&gt;&lt;link/&gt;&lt;name&gt;Combined Donut and Table&lt;/name&gt;&lt;option_schema&gt;[{"hint":"Size of the \"donut hole,\" default is 50%","name":"donut_cutout_percent","section":"Presentation","label":"Donut Cutout Percent","type":"integer"},{"hint":"Percent of a circle the chart should consume. Min 25%","name":"arc_percent","section":"Presentation","label":"Arc Percent","type":"integer"},{"hint":"Percentage to rotate the chart from 0 degrees vertical","name":"rotation_offset","section":"Presentation","label":"Rotation Offset","type":"integer"},{"hint":"Number of milliseconds it takes to animate the chart","name":"animation_speed","section":"Presentation","label":"Animation Speed","type":"choice","choices":[{"label":"0","value":"0"},{"label":"500","value":"500"},{"label":"750","value":"750"},{"label":"1000","value":"1000"},{"label":"1250","value":"1250"},{"label":"1500","value":"1500"}]},{"hint":"Identify the page to target when the chart is clicked. Default is \"list\"","name":"target_page","section":"Behavior","label":"Target Page","type":"string"},{"hint":"Indicate whether you want to emit an event when the chart is clicked or navigate to another page","name":"event_driven","section":"Behavior","label":"Event Driven","type":"boolean"}]&lt;/option_schema&gt;&lt;public&gt;false&lt;/public&gt;&lt;roles/&gt;&lt;script&gt;&lt;![CDATA[(function(){
+	/*  "use strict"; - linter issues */
+	// populate the 'data' object
+	var sp_page = $sp.getValue('sp_page');
+	var pageGR = new GlideRecord('sp_page');
+	pageGR.get(sp_page);
+	data.page_id = pageGR.id.getDisplayValue();
+	$sp.getValues(data);
+	if (data.field_list) {
+		data.fields_array = data.field_list.split(',');
+	} else {
+		data.field_list = $sp.getListColumns(data.table);
+	}
+	
+	data.display_field = $sp.getValue('display_field');
+
+	if (input) {
+		data.p = input.p;
+		data.o = input.o;
+		data.d = input.d;
+		data.q = input.q;
+	}
+	data.p = data.p || 1;
+	data.o = data.o || $sp.getValue('order_by');
+	data.d = data.d || $sp.getValue('order_direction');
+
+	data.page_index = (data.p - 1);
+	data.window_size = $sp.getValue('maximum_entries') || 10;
+	data.window_start  = (data.page_index * data.window_size);
+	data.window_end = (((data.page_index + 1) * data.window_size));
+	data.filter = $sp.getValue("filter");
+
+	var gr = new GlideRecordSecure(data.table);
+	if (!gr.isValid()) {
+		data.invalid_table = true;
+		data.table_label = data.table;
+		return;
+	}
+	data.table_label = gr.getLabel();
+
+	var widgetParams = {
+		table: data.table,
+		fields: data.field_list,
+		o: data.o,
+		d: data.d,
+		filter: data.filter,
+		window_size: data.window_size,
+		view: 'sp',
+		title: options.title,
+		show_breadcrumbs: true
+	};
+	data.dataTableWidget = $sp.getWidget('widget-data-table', widgetParams);
+	
+	var donutParms = {
+		table: data.table,
+		filter: data.filter,
+		display_field: data.display_field
+	};
+	
+	// Copy options
+	for (var opt in options){
+		donutParms[opt] = options[opt];
+	}
+	
+	data.donutWidget = $sp.getWidget('donut-chart-20',donutParms);
+})();]]&gt;&lt;/script&gt;&lt;servicenow&gt;false&lt;/servicenow&gt;&lt;sys_class_name&gt;sp_widget&lt;/sys_class_name&gt;&lt;sys_created_by&gt;nicholas.yancer&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2018-03-14 19:37:50&lt;/sys_created_on&gt;&lt;sys_id&gt;da494b5e4ff01b402debb7a18110c724&lt;/sys_id&gt;&lt;sys_mod_count&gt;18&lt;/sys_mod_count&gt;&lt;sys_name&gt;Combined Donut and Table&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sp_widget_da494b5e4ff01b402debb7a18110c724&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;nicholas.yancer&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2018-03-15 19:02:38&lt;/sys_updated_on&gt;&lt;template&gt;&lt;![CDATA[&lt;div&gt;
+  &lt;div class="alert alert-danger" ng-if="data.invalid_table"&gt;
+    ${Table not defined} '{{data.table_label}}'
+  &lt;/div&gt;
+  &lt;!-- Toggle between chart and table view. The toggle will set the value of the showTable variable to true or false when clicked. --&gt;
+  &lt;toggle-switch watch-var="showTable" title="Chart or Table" label-true="Table" label-false="Chart"&gt;&lt;/toggle-switch&gt;
+  &lt;!-- If showTable is false, show the chart. Note the use of ng-if here. The angular chartJS code checks on the chart at regular intervals.
+		If the chart canvas is hidden when that check is performed there is an error and the next time you try to show the chart it will not render correctly. --&gt;
+  &lt;div ng-if="!showTable"&gt;
+    &lt;sp-widget ng-if="!!data.donutWidget" widget="data.donutWidget"&gt;&lt;/sp-widget&gt;
+  &lt;/div&gt;
+  
+  &lt;!-- If showTable is true, then show the data table widget. Note that it is okay to use ng-show here,
+	as there is no requirement that the data table is visible for other processes. --&gt;
+  &lt;div ng-show="showTable"&gt;
+  	&lt;sp-widget ng-if="data.dataTableWidget" widget="data.dataTableWidget"&gt;&lt;/sp-widget&gt;
+  &lt;/div&gt;
+  
+  &lt;sp-widget ng-if="!!formWidget" widget="formWidget"&gt;&lt;/sp-widget&gt;
+  
+&lt;/div&gt;]]&gt;&lt;/template&gt;&lt;/sp_widget&gt;&lt;/record_update&gt;</payload>
+<payload_hash>476957496</payload_hash>
+<remote_update_set display_value="CCW0460 3 - Lab Part 3">31eecaae4fc117002debb7a18110c750</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>nicholas.yancer</sys_created_by>
+<sys_created_on>2018-03-27 20:16:56</sys_created_on>
+<sys_id>fdeecaae4fc117002debb7a18110c750</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>1622b0aea890000001</sys_recorded_at>
+<sys_updated_by>nicholas.yancer</sys_updated_by>
+<sys_updated_on>2018-03-27 20:16:56</sys_updated_on>
+<table/>
+<target_name>Combined Donut and Table</target_name>
+<type>Widget</type>
+<update_domain>global</update_domain>
+<update_guid>94da487608305b4044b931001dd9b479</update_guid>
+<update_guid_history>94da487608305b4044b931001dd9b479:476957496,152a4836cb305b4092438deebdec97d1:-1818546712,d7034cfe3ffc1b408a473f4c0bd382b4:476957496,1e628cbe56fc1b4023fda0f989fd5c17:633164796,a30244be19fc1b40e73cfbbfa0e7da35:1403663226,82a0847e29fc1b40336a4b9279169495:681471383,816044be0efc1b40cc237266ab36a02d:766508437,bdffb3aec0fc1b4036288ac69684e83e:-1996893,c4af7b2ed2fc1b4052c2230d5ae742be:1180606355,fd3fb76e09fc1b40909abdc4b5256b89:-459817375,84ceff2e80fc1b407eb69ebff72182ca:-2083911723,5a9eb72e6afc1b40b9b6466d4d29e8cf:1180606355,2f5eb32efffc1b40cb3e57bfd7368328:1572413944,a31efbea3efc1b40bbee5bcf6592ba8d:2069605462,f1ad37ea84fc1b40f606ed5439cad6ca:1282112689,d73d7faa15fc1b4061a44986fea07305:-494766486,750d77aab3fc1b403d6fc891f1fef137:-632183029,8d9cf7aadbfc1b408706fcc50b3fd3e7:1650954304,295cf32adefc1b403add78a700dfc589:-1319327660,480cf76a89fc1b40347ba8522fa42775:2058184496,842b3f2a47fc1b40f8bb6cebfa237d3c:-1549020381,4c0a3ba6f9fc1b40e7fe49d73362e6df:371366642,2e99b7a64efc1b400843214d60f0608b:-700664760,9c79b7a64efc1b402ef1691694270787:-1811623146,153937a60afc1b4045013ee3d049db31:1840295955,0df8bf264efc1b40820c2e7a6efebbe8:1771888033,a6473f2602fc1b4070a3c7c6aff41424:824415735,0b273be20cfc1b403d0868176b51dbb8:1571145617,6ad7c7a6bc7c1b401d2e6d6cdc2f1530:476957496,215d9bde98341b4018946c4cd5712250:-288408885,393d5bdefb341b40495aacd64cd88c14:245042631,24fc5b1e99341b40a460fc1194be09c7:-355302065,9d6c5b1eb1341b400f806797f54128c2:-590393866,97395b1eda341b4068686a2049d9c88a:1698348178,89e8531e38341b405caafbd4d0770438:-1645844412,8768d3dac9341b406518b9ed0d4a6e1f:82581087,aeb75b9a4e341b40cdfb28f10ff93da6:1513466992,46ff4b92ce341b40ef73f8113b97022e:-149128697,7a5dc7923f341b4079ac6a073835bf4c:-1457629155,e92c03121e341b40fd8b665460245c26:-149128697,530c8b5235341b405f7dfba6d3398fee:-1457629155,f38b4f12ad341b402ba23e16faf3051c:-149128697,996a4fde27f01b4018d593d45a131414:763804051,8b794b1eb8f01b4083561aab7445aa0a:-846585512,9e498fde22f01b40712e07a5ee1d9012:-939004658</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+</unload>
