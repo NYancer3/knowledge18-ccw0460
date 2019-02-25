@@ -56,7 +56,7 @@ Understand **Widget Dependencies** and how they can be used to provide functiona
       // Instantiate a container for our chart options. We will get these from the widget instance options.
       data.options = {};
 
-      // Here we define the table, "group by" field, and initial filterr for the chart
+      // Here we define the table, "group by" field, and initial filter for the chart
       var table = $sp.getValue('table') || options.table;
       var field = $sp.getValue('display_field') || options.display_field;
       var filter = $sp.getValue('filter') || options.filter;
@@ -379,7 +379,7 @@ Learn how to embed widgets and dynamically show or hide them by watching a commo
             show_breadcrumbs: true
         };
         
-        // Now we will use the server-sode getWidget method to get a data table widget we can embed
+        // Now we will use the server-side getWidget method to get a data table widget we can embed
         data.dataTableWidget = $sp.getWidget('widget-data-table', widgetParams);
 
         // We will do the same for the donut chart widget. Build an object to feed in the options
@@ -389,7 +389,7 @@ Learn how to embed widgets and dynamically show or hide them by watching a commo
             display_field: data.display_field
         };
 
-        // Copy options from the current widget instance to feed into ourr embedded widget
+        // Copy options from the current widget instance to feed into our embedded widget
         for (var opt in options){
             donutParms[opt] = options[opt];
         }
@@ -452,7 +452,7 @@ Okay, we've now got two widgets on the page. Wouldn't it be nice if we could sho
         2. Script:
         ```javascript
         angular.module('css-toggle-switch',[]).directive('toggleSwitch',[function(){
-            // We can define default values in order to makevcertian  directive attributes optional
+            // We can define default values in order to make certian directive attributes optional
             var defaults = {
                 labelTrue: 'On',
                 labelFalse: 'Off'
@@ -503,7 +503,7 @@ Okay, we've now got two widgets on the page. Wouldn't it be nice if we could sho
         ```
 1. Select **Submit** (in the pop-up)
 1. Select **Submit** (in the JS Include Form)  
->Note that if you wanted to make the above Directive an Angular Provider, you would just need to put the *function* portion of the code into the script field and use the same value (toggleSwitch) in the **Name** field of the provider record.
+>Note that if you wanted to make the above Directive an Angular Provider, you would just need to put the *function* portion of the code into the script field and use the same value (toggleSwitch) in the **Name** field of the provider record. However, as we mentioned previously this toggle switch relies on a css library. We could embed that in the "template" property of the directive, but that would get messy. If we were to build this as and Angular Provider, then we would also have to remember to include the CSS dependency for any widget that used the provider. It's just simpler to package both the Directive (JavaScript) and the CSS into a single Widget Dependency.   
 ## Add the Toggle Switch to the Widget
 1. Navigate to **Service Portal** > **Widgets**
 1. Find and open the **Combined Donut and Table** widget you created previously
@@ -536,7 +536,7 @@ Okay, we've now got two widgets on the page. Wouldn't it be nice if we could sho
     2. Client controller:
     ```javascript
     function ($scope, spUtil, $location, spAriaFocusManager) {
-        /* this is the original code copied from the data table widget */
+        /* This is the original code copied from the data table widget */
         $scope.$on('data_table.click', function(e, parms){
             var p = $scope.data.page_id || 'form';
             var s = {id: p, table: parms.table, sys_id: parms.sys_id, view: 'sp'};
