@@ -565,136 +565,212 @@ Learn how to use events to pass data between different widgets on a page.
 1. Modify the form as follows:
     1. Server Script:
     ```javascript
-    (function() {
-        /* populate the 'data' object */
-        /* e.g., data.table = $sp.getValue('table'); */
+	(function() {
+		/* populate the 'data' object */
+		/* e.g., data.table = $sp.getValue('table'); */
 
-        data.options = {};
+		// Instantiate a container for our chart options. We will get these from the widget instance options.
+		data.options = {};
 
-        var table = $sp.getValue('table') || options.table || input.table;
-        var field = $sp.getValue('display_field') || options.display_field || input.display_field;
-        var filter = $sp.getValue('filter') || options.filter || input.filter;
+		// Here we define the table, "group by" field, and initial filter for the chart
+		/*
+			LAB 3: Add "input" properties to our assignments. This will allow the server script to be called asynchronously from the client script.
+		*/
+		var table = $sp.getValue('table') || options.table || input.table;
+		var field = $sp.getValue('display_field') || options.display_field || input.display_field;
+		var filter = $sp.getValue('filter') || options.filter || input.filter;
+		/* END LAB 3 CHANGE */
+		
+		/*
+			LAB 3: We need to set some properties on the "data" object.
+			These will passed back to this script as "input" from the client.
+			Necessary for asynchronous functionality.
+		*/
+		data.table = table;
+		data.filter = filter;
+		data.display_field = field;
+		/* END LAB 3 CHANGE */
+		
+		/*
+			LAB 3: Are we event-driven? If nothing given, default to false.
+		*/
+		data.options.event_driven = options.event_driven || input.event_driven || 'false';
+		data.event_driven = data.options.event_driven;
+		/* END LAB 3 CHANGE */
+		
+		data.currentPage = $sp.getParameter('id');
 
-        data.table = table;
-        data.filter = filter;
-        data.display_field = field;
+		// Instantiate axis labels and data containers.												 
+		data.chartLabels = [];
+		data.chartData = [];
 
-        // Are we event-driven? If nothing given, default to false.
-        data.options.event_driven = options.event_driven || input.event_driven || 'false';
-        data.event_driven = data.options.event_driven;
+		// We will need to make an index of field values to query conditions. We will need this for the click actions on our chart; when you click the chart, we will get the query value to send to the list based on the value of the slice you clicked.
+		data.chartLookup = {};
 
-        data.currentPage = $sp.getParameter('id');
+		// We can either specify a target page for our chart, or default to the "list" page
+		/*
+			LAB 3: Note the addition, again, of "input" to our checks for populating this property.
+		*/
+		data.targetPage = options.target_page || input.target_page || 'list';
+		/* END LAB 3 CHANGE */
 
-        data.chartLabels = [];
-        data.chartData = [];
-        data.chartLookup = {};
+		// Here we start setting our chart options. Note the defaults in case you do not enter any instance options
+		// Animation Speed, default 1000
+		/*
+			LAB 3: We are going to put animation speed into a variable.
+			In the original script, we werer getting this from "options."
+			However, we need to also check "input" for a value, so we do that in a variable.
+			Note that we are using the variable on the very next line.
+		*/
+		var anim_speed = options.animation_speed || input.animation_speed;
+		data.options.animate = parseInt(anim_speed);
+		/* END LAB 3 CHANGE */
+        
+		if (isNaN(parseInt(data.options.animate))){
+			data.options.animate = 1000;
+		}
 
-        data.targetPage = options.target_page || input.target_page || 'list';
+		/*
+			LAB 3: We are having some issues when the value is 0.
+			Also, note that we are also checking "input" for the donut_coutout_percent value.
+		*/
+		if (!!options && options.donut_cutout_percent == 0){
+			data.donut_cutout_percent = '0';
+		} else if (!!input && input.donut_cutout_percent == 0){
+			data.donut_cutout_percent = '0';
+		} else {
+		data.donut_cutout_percent = options.donut_cutout_percent || input.donut_cutout_percent;
+		}
+		/* END LAB 3 CHANGE */
+		
+		// donut_coutout_percent, default 50, min 0, max 90
+		/*
+			LAB 3: Note that we are setting the property from "data" this time (set above)
+			and not from "options" directly.
+			This is because a value of zero was previously causing issues AND because we want to include "input" in our checks for this value.
+		*/
+		data.options.donut_cutout = data.donut_cutout_percent;
+		/* END LAB 3 CHANGE */
+		
+		data.options.orig_cutout = data.options.donut_cutout;
+		if (isNaN(parseInt(data.options.donut_cutout)) || data.options.donut_cutout < 0 || data.options.donut_cutout > 90){
+			data.options.donut_cutout = 50;
+		}
 
-        // Animation Speed, default 1000
-        var anim_speed = options.animation_speed || input.animation_speed;
-        data.options.animate = parseInt(anim_speed);
-        if (isNaN(parseInt(data.options.animate))){
-            data.options.animate = 1000;
-        }
+		// Arc percent, default 0
+		/*
+			LAB 3: Note that we are also checking "input" for this value.
+		*/
+		data.options.chartRotation = options.rotation_offset || input.rotation_offset || 0;
+		/* END LAB 3 CHANGE */
+		
+		/*
+			LAB 3: We want to store the result from above as a property of "data."
+			This will come through as "input" the next time this server code is called from the client.
+		*/
+		data.rotation_offset =  data.options.chartRotation;
+		/* END LAB 3 CHANGE */
+		
+		// Chart circumference, default 100. Min 25, max 100.
+		/*
+			LAB 3: Note that we are adding a check on "input."
+			We are also storing the result to the "data" object to be used as "input" from the client.
+			Also note that when we set the "data.options" property, we are using what we determined for data.circ as the value.
+		*/
+		data.options.circ = options.arc_percent || input.arc_percent;
+		data.arc_percent = data.options.circ;
+		data.options.chartCircumference = parseInt(data.options.circ) || 100;
+		/* END LAB 3 CHANGE */
+		
+		if (isNaN(parseInt(data.options.chartCircumference)) || data.options.chartCircumference < 25 || data.options.chartCircumference > 100){
+			data.options.chartCircumference = 100;
+		}
 
-        // Having some issues when the value is 0.
-        if (!!options && options.donut_cutout_percent == 0){
-            data.donut_cutout_percent = '0';
-        } else if (!!input && input.donut_cutout_percent == 0){
-            data.donut_cutout_percent = '0';
-        } else {
-        data.donut_cutout_percent = options.donut_cutout_percent || input.donut_cutout_percent;
-        }
+		/*
+			LAB 3: We want to store the title to the "data" object.
+			Again, this will be passed in as "input" from the client script.
+		*/
+		data.title = options.title || input.title;
 
-        // donut_coutout_percent, default 50, min 0, max 90
-        data.options.donut_cutout = data.donut_cutout_percent;
-        data.options.orig_cutout = data.options.donut_cutout;
-        if (isNaN(parseInt(data.options.donut_cutout)) || data.options.donut_cutout < 0 || data.options.donut_cutout > 90){
-            data.options.donut_cutout = 50;
-        }
+		/*
+			LAB 3: Execute asynchronously.
+			If we do not have "input" defined, then this is not being called from the client and we should just return.
+		*/
+		if (!input){
+			return;
+		}
 
-        // Arc percent, default 0
-        data.options.chartRotation = options.rotation_offset || input.rotation_offset || 0;
-        data.rotation_offset =  data.options.chartRotation;
+		// If we are executing asynchronously, let's see what "data" looks like in the console.
+		console.log(data);
+		/* END LAB 3 CHANGE */
+		
+		// We can use the built-in chart colors settings. This allows you to define colors per table to be used in this or other out-of-the-box rerports
+		function getColors(tbl,fld){
+			var retArr = [];
+			var g_colors = new GlideChartFieldColors(tbl,fld);
+			data.chartLabels.forEach(function(lbl){
+				var val = data.chartLookup[lbl];
+				var col = val.split('=');
+				col = (col.length > 1 ? col[1] : col[0]).toString();
+				retArr.push(g_colors.get(col));
+			});
 
-        // Chart circumference, default 100. Min 25, max 100.
-        data.options.circ = options.arc_percent || input.arc_percent;
-        data.arc_percent = data.options.circ;
-        data.options.chartCircumference = parseInt(data.options.circ) || 100;
-        if (isNaN(parseInt(data.options.chartCircumference)) || data.options.chartCircumference < 25 || data.options.chartCircumference > 100){
-            data.options.chartCircumference = 100;
-        }
+			console.log(retArr);
 
-        data.title = options.title || input.title;
+			return retArr;
+		}
 
-            // Execute async
-        if (!input){
-            return;
-        }
+		// If we have defined a table and field for this widget in the instance options, get the data to build the chart
+		if (!!table && !!field){
 
-        console.log(data);
+			/*
+				LAB 3: We have added a check on "input" for asynchronous execution.
+			*/
+			data.options.chartTitle = options.title || input.title || $sp.getValue('title');
+			/* END LAB 3 CHANGE */
+			
+			data.options.table = table;
+			data.options.display_field = field;
+			data.options.filter = filter;
 
-        function getColors(tbl,fld){
-            var retArr = [];
-            var g_colors = new GlideChartFieldColors(tbl,fld);
-            data.chartLabels.forEach(function(lbl){
-                var val = data.chartLookup[lbl];
-                var col = val.split('=');
-                col = (col.length > 1 ? col[1] : col[0]).toString();
-                retArr.push(g_colors.get(col));
-            });
+			var ga = new GlideAggregate(table);
+			ga.addAggregate('COUNT',field);
+			ga.orderByAggregate('COUNT',field);
+			ga.addEncodedQuery(filter);
+			ga.query();
 
-            console.log(retArr);
+			var oth = 0;
+			var othItems = [];
 
-            return retArr;
-        }
+			// We are setting a hard limit of 12 items for an "other" group. How might you make this configurable?
+			while (ga.next() && oth < 12){
+				var disp = !!ga.getDisplayValue(field) ? ga.getDisplayValue(field) : '(Empty)';
+				data.chartLabels.push(disp);
+				data.chartLookup[disp] = '=' + ga.getValue(field);
+				othItems.push(ga.getValue(field));
+				data.chartData.push(ga.getAggregate('COUNT',field));
+				oth++;
+			}
 
-        if (!!table && !!field){
+			// If we have reached our threshold for "Other," then our query should be anything that does not match what we have used so far
+			if (oth == 12){
+				var gr = new GlideRecord(table);
+				gr.addEncodedQuery(filter);
+				gr.addQuery(field,'NOT IN',othItems.toString());
+				gr.query();
 
+				if (gr.getRowCount() > 0){
+					data.chartLabels.push('Other');
+					data.chartLookup['Other'] = 'NOT IN' + othItems;
+					data.chartData.push(gr.getRowCount());
+				}
+			}
 
-            data.options.chartTitle = options.title || input.title || $sp.getValue('title');
+			data.chartColors = getColors(table,field);
 
-            data.options.table = table;
-            data.options.display_field = field;
-            data.options.filter = filter;
+		}
 
-            var ga = new GlideAggregate(table);
-            ga.addAggregate('COUNT',field);
-            ga.orderByAggregate('COUNT',field);
-            ga.addEncodedQuery(filter);
-            ga.query();
-
-            var oth = 0;
-            var othItems = [];
-
-            while (ga.next() && oth < 12){
-                var disp = !!ga.getDisplayValue(field) ? ga.getDisplayValue(field) : '(Empty)';
-                data.chartLabels.push(disp);
-                data.chartLookup[disp] = '=' + ga.getValue(field);
-                othItems.push(ga.getValue(field));
-                data.chartData.push(ga.getAggregate('COUNT',field));
-                oth++;
-            }
-
-            if (oth == 12){
-                var gr = new GlideRecord(table);
-                gr.addEncodedQuery(filter);
-                gr.addQuery(field,'NOT IN',othItems.toString());
-                gr.query();
-
-                if (gr.getRowCount() > 0){
-                    data.chartLabels.push('Other');
-                    data.chartLookup['Other'] = 'NOT IN' + othItems;
-                    data.chartData.push(gr.getRowCount());
-                }
-            }
-
-            data.chartColors = getColors(table,field);
-
-        }
-
-    })();
+	})();
     ```
     2. Client controller:
     ```javascript
