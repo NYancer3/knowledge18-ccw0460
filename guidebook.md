@@ -774,64 +774,87 @@ Learn how to use events to pass data between different widgets on a page.
     ```
     2. Client controller:
     ```javascript
-    function(spUtil,$scope,$rootScope,$location) {
-        /* widget controller */
-        var c = this;
+	function(spUtil,$scope,$rootScope,$location) {
+		/* widget controller */
+		var c = this;
 
-        // Make this async
-        c.server.update();
+		/*
+			LAB 3: Make this widget async.
+			Calling c.server.update will call the server script and pass in our "data" object as "input."
+			This will refresh our "data" object, this time with data to render in the chart.
+		*/
+		c.server.update();
+		/* END LAB 3 CHANGES */
+		
+		// Here we define how the chart legend is displayed. How might you make this configurable?
+		c.data.chartLegend = {
+			display:true,
+			position:'bottom',
+			labels:{
+				boxWidth:15
+			}
+		};
 
-        c.data.chartLegend = {
-            display:true,
-            position:'bottom',
-            labels:{
-                boxWidth:15
-            }
-        };
+		// Here we are building our chart options. This controls the visual display and animations for the chart.
+		c.data.chartOptions = {
+			rotation:((-0.5 + (-c.data.options.chartRotation)/50)*Math.PI),
+			circumference:2*(c.data.options.chartCircumference/100)*Math.PI,
+			legend:c.data.chartLegend,
+			animation:{
+				duration: c.data.options.animate,
+				easing:'easeOutBounce'
+			},
+			cutoutPercentage:c.data.options.donut_cutout
+		};
 
-        c.data.chartOptions = {
-            rotation:((-0.5 + (-c.data.options.chartRotation)/50)*Math.PI),
-            circumference:2*(c.data.options.chartCircumference/100)*Math.PI,
-            legend:c.data.chartLegend,
-            animation:{
-                duration: c.data.options.animate,
-                easing:'easeOutBounce'
-            },
-            cutoutPercentage:c.data.options.donut_cutout
-        };
+		// If we have a lot of text in our legend labels, decrease the font size for better display.
+		if (c.data.chartLabels.toString().length > 250){
+			c.data.chartLegend.labels.fontSize = 10;
+		}
 
-        if (c.data.chartLabels.toString().length > 250){
-            c.data.chartLegend.labels.fontSize = 10;
-        }
+		// Here we define what happens when you click on the chart. The points argument contains information about the area that was clicked, and the evt argument contains information about the event itself. 
+		c.onClick = function (points, evt) {
 
-        c.onClick = function (points, evt) {
+			// Check to see if we have anything in the points array
+			if (points.length > 0){
+				// The first member of the points array contains information about the portion of the chart we clicked. The _model property does not contain a "value," just a label which is why we built the "chartLookup" object to index based on display value.  
+				var filt = (!!c.data.options.filter ? c.data.options.filter + '^' : '') + c.data.options.display_field + c.data.chartLookup[points[0]._model.label];
 
-            if (points.length > 0){
-                var filt = (!!c.data.options.filter ? c.data.options.filter + '^' : '') + c.data.options.display_field + c.data.chartLookup[points[0]._model.label];
+				/*
+					LAB 3: If the widget options tell us we are event-driven, then emit an event.
+					We will rely on other widgets to "catch" and process this event.
+					We do this instead of navigating away from the page.
+				*/
+				if (c.data.options.event_driven == 'true'){
+					$scope.$emit('chart.click',{filter: filt});
+				} else {
+					// If not, then navigate like we did before.
+					/* END LAB 3 CHANGES */
+					
+					// Now we build an object for the click target. This will be used to add parameters to the URL location
+					var targObj = {
+						id: c.data.targetPage,
+						table:c.data.options.table,
+						filter:filt,
+						previous_id:c.data.currentPage,
+						view:'sp'
+					};
+					$location.search(targObj);
+				/*
+					LAB 3: We need to close our newly introduced "IF/ELSE" block.
+				*/
+				}
+				/* END LAB 3 CHANGES */
+			}
 
-                // If the widget options tell us we are event-driven, then emit an event.
-                if (c.data.options.event_driven == 'true'){
-                    $scope.$emit('chart.click',{filter: filt});
-                } else {
-                    // If not, then navigate
-                    var targObj = {
-                        id: c.data.targetPage,
-                        table:c.data.options.table,
-                        filter:filt,
-                        previous_id:c.data.currentPage,
-                        view:'sp'
-                    };
-                    $location.search(targObj);
-                }
-            }
+		};
 
-        };
+		// We want to watch for any changes, so we will use the recordWatch functionality to keep the chart up to date
+		if (!!c.data.options.table){
+			spUtil.recordWatch($scope,c.data.options.table,c.data.options.filter);
+		}
 
-        if (!!c.data.options.table){
-            spUtil.recordWatch($scope,c.data.options.table,c.data.options.filter);
-        }
-
-    }
+	}
     ```
     3. CSS:
     ```css
