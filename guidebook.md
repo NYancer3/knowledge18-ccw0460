@@ -313,9 +313,9 @@ Learn how to embed widgets and dynamically show or hide them by watching a commo
         <div class="alert alert-danger" ng-if="data.invalid_table">
             ${Table not defined} '{{data.table_label}}'
         </div>
-        <!-- Embed our chart widget, if we weer able to generate one -->
+        <!-- Embed our chart widget, if we were able to generate one -->
         <sp-widget ng-if="!!data.donutWidget" widget="data.donutWidget"></sp-widget>
-        <!-- Embed our data table widget, if we werer able to generate one -->
+        <!-- Embed our data table widget, if we were able to generate one -->
         <sp-widget ng-if="data.dataTableWidget" widget="data.dataTableWidget"></sp-widget>
     </div>
     ```
