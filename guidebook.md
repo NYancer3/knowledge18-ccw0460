@@ -955,82 +955,193 @@ Learn how to use events to pass data between different widgets on a page.
 1. Update the form as follows:
     1. Body HTML template:
     ```html
-    <div>
-      <div class="alert alert-danger" ng-if="data.invalid_table">
-        ${Table not defined} '{{data.table_label}}'
-      </div>
-      <!-- Toggle between chart and table view. The toggle will set the value of the showTable variable to true or false when clicked. -->
-      <toggle-switch watch-var="showTable" title="Chart or Table" label-true="Table" label-false="Chart"></toggle-switch>
-      <!-- If showTable is false, show the chart. Note the use of ng-if here. The angular chartJS code checks on the chart at regular intervals.
-            If the chart canvas is hidden when that check is performed there is an error and the next time you try to show the chart it will not render correctly. -->
-      <div ng-if="!showTable">
-        <sp-widget ng-if="!!data.donutWidget" widget="data.donutWidget"></sp-widget>
-      </div>
+	<div>
+	  <div class="alert alert-danger" ng-if="data.invalid_table">
+		${Table not defined} '{{data.table_label}}'
+	  </div>
+	  <!-- Toggle between chart and table view. The toggle will set the value of the showTable variable to true or false when clicked. Notice that we are binding the watchVar scope property in our directive to the current scope's showTable property through the watch-var attribute. -->
+	  <toggle-switch watch-var="showTable" title="Chart or Table" label-true="Table" label-false="Chart"></toggle-switch>
+	  <!-- If showTable is false, show the chart. Note the use of ng-if here. The angular chartJS code checks on the chart at regular intervals.
+			If the chart canvas is hidden when that check is performed there is an error and the next time you try to show the chart it will not render correctly. -->
+	  <div ng-if="!showTable">
+		<sp-widget ng-if="!!data.donutWidget" widget="data.donutWidget"></sp-widget>
+	  </div>
 
-      <!-- If showTable is true, then show the data table widget. Note that it is okay to use ng-show here,
-        as there is no requirement that the data table is visible for other processes. -->
-      <div ng-show="showTable">
-        <sp-widget ng-if="data.dataTableWidget" widget="data.dataTableWidget"></sp-widget>
-      </div>
+	  <!-- If showTable is true, then show the data table widget. Note that it is okay to use ng-show here,
+		as there is no requirement that the data table is visible for other processes. -->
+	  <div ng-show="showTable">
+		<sp-widget ng-if="data.dataTableWidget" widget="data.dataTableWidget"></sp-widget>
+	  </div>
 
-      <sp-widget ng-if="!!formWidget" widget="formWidget"></sp-widget>
+	  <!-- LAB 3: If we have a form widget, embed it. We will instantiate a widget if we click on the data table. -->
+	  <sp-widget ng-if="!!formWidget" widget="formWidget"></sp-widget>
+	  <!-- END LAB 3 CHANGES -->
 
-    </div>
-    ```
+	</div>
+	```
     2. Client Controller:
     ```javascript
-    function ($scope, spUtil, $location, spAriaFocusManager) {
-        /*$scope.$on('data_table.click', function(e, parms){
-            var p = $scope.data.page_id || 'form';
-            var s = {id: p, table: parms.table, sys_id: parms.sys_id, view: 'sp'};
-            var newURL = $location.search(s);
-            spAriaFocusManager.navigateToLink(newURL.url());
-        });*/
+	function ($scope, spUtil, $location, spAriaFocusManager) {
+		/* This is the original code copied from the data table widget */
+		/*
+			LAB 3: We are going to remove the original code for the data_table.click event.
+			We will redefine what happens when the table is clicked.
+		*/
+		/*
+		$scope.$on('data_table.click', function(e, parms){
+			var p = $scope.data.page_id || 'form';
+			var s = {id: p, table: parms.table, sys_id: parms.sys_id, view: 'sp'};
+			var newURL = $location.search(s);
+			spAriaFocusManager.navigateToLink(newURL.url());
+		});
+		*/
+		/* END LAB 3 CHANGES */
 
-        $scope.showTable = false;
+		/* Here is our code. We are just defining the "showTable" property for $scope. Defaulting to false. */
+		$scope.showTable = false;
 
-        // Watch for the chart click event.
-        $scope.$on('chart.click',function(evt,parms){
-            console.log(parms);
-            // Toggle showTable to true to show the table
-            $scope.showTable = true;
-            // Let the table know about the updated filter.
-            $scope.$broadcast('data_table.setFilter',parms.filter);
-        });
+		/*
+			LAB 3: Everything from here to the end is new code.
+			1. We are going to "watch" for the "chart.click" event emitted by the embedded chart widget.
+			2. We are going to define a "formWidget" property for our current scope. Note that we modified the HTML in the previous step to check for this property.
+			3. We are going to redefine the "watch" on our data_table.click" event.
+			4. We are going to "watch" for an embedded modal's "closed" event.
+		*/
+		// Watch for the chart click event.
+		$scope.$on('chart.click',function(evt,parms){
+			console.log(parms);
+			// Toggle showTable to true to show the table
+			$scope.showTable = true;
+			/*
+				Let the table know about the updated filter.
+				Notice that we are "broadcasting" this "away" from rootScope.
+				This means that we are only notifying the data table that is embedded in this widget (or any of its descendants)
+				If we have multiple instance of this widget on the page (hint-hint!), then this event will not be visible to the other embedded tables.
+				The "setFilter" event is part of the out-of-the-box data table widget code.
+			*/
+			$scope.$broadcast('data_table.setFilter',parms.filter);
+		});
 
-        // When the table is clicked, show the target record in a form modal
+		// When the table is clicked, show the target record in a form modal
+		// Define the formWidget property here, manage it elsewhere.
+		$scope.formWidget = '';
 
-        $scope.formWidget = '';
+		/*
+			Here we are changing what heppens when the data table is clicked.
+			This event is emitted (sent "toward" rootScope) by the out-of-the box data table widget.
+		*/
+		$scope.$on('data_table.click',function(evt,parms){
+			// Build params to get a form widget
+			var formOpts = {
+				embeddedWidgetId: 'widget-form',
+				embeddedWidgetOptions: {
+					table: parms.table,
+					sys_id: parms.sys_id,
+					view: 'sp',
+					disableUIActions: 'true',
+					hideRelatedLists: true
+				}
+			};
 
-        $scope.$on('data_table.click',function(evt,parms){
-            // Build params to get a form widget
-            var formOpts = {
-                embeddedWidgetId: 'widget-form',
-                embeddedWidgetOptions: {
-                    table: parms.table,
-                    sys_id: parms.sys_id,
-                    view: 'sp',
-                    disableUIActions: 'true',
-                    hideRelatedLists: true
-                }
-            };
+			/*
+				Get our widget.
+				spUtil.get returns a "promise." This means it executes asynchronously and will "do something" when the promise "resolves" (is finished).
+				In our case, the result returned from a successful promise is a widget object that can be embedded.
+				When the promise resolves, we will set the formWidget property of our instance's scope to the result.
+				Note that we are not handling any promise failure. How would you do this?
+			*/
+			spUtil.get('widget-modal',formOpts).then(function(resp){
+				$scope.formWidget = resp;
+			});
+		});
 
-            // Get our widget
-            spUtil.get('widget-modal',formOpts).then(function(resp){
-                $scope.formWidget = resp;
-            });
-        });
-
-        // Watch for the modal widget being closed
-        $scope.$on('sp.widget-modal.closed',function(){
-            $scope.formWidget = '';
-        });
-    }
-    ```
+		/*
+			Watch for the modal widget being closed.
+			When the modal is closed, we will clear the formWidget property to make the HTML happy.
+		*/
+		$scope.$on('sp.widget-modal.closed',function(){
+			$scope.formWidget = '';
+		});
+		/* END LAB 3 CHANGES */
+	}
+	```
     3. Option schema (we are adding an option called Event Driven to the schema): 
     *(Note: this can also be updated in the Widget Editor using the Edit Option Schema as done in LAB 1)*
     ```javascript
-    [{"hint":"Size of the \"donut hole,\" default is 50%","name":"donut_cutout_percent","section":"Presentation","label":"Donut Cutout Percent","type":"integer"},{"hint":"Percent of a circle the chart should consume. Min 25%","name":"arc_percent","section":"Presentation","label":"Arc Percent","type":"integer"},{"hint":"Percentage to rotate the chart from 0 degrees vertical","name":"rotation_offset","section":"Presentation","label":"Rotation Offset","type":"integer"},{"hint":"Number of milliseconds it takes to animate the chart","name":"animation_speed","section":"Presentation","label":"Animation Speed","type":"choice","choices":[{"label":"0","value":"0"},{"label":"500","value":"500"},{"label":"750","value":"750"},{"label":"1000","value":"1000"},{"label":"1250","value":"1250"},{"label":"1500","value":"1500"}]},{"hint":"Identify the page to target when the chart is clicked. Default is \"list\"","name":"target_page","section":"Behavior","label":"Target Page","type":"string"},{"hint":"Indicate whether you want to emit an event when the chart is clicked or navigate to another page","name":"event_driven","section":"Behavior","label":"Event Driven","type":"boolean"}]
+	[
+		{
+			"hint":"Size of the \"donut hole,\" default is 50%",
+			"name":"donut_cutout_percent",
+			"section":"Presentation",
+			"label":"Donut Cutout Percent",
+			"type":"integer"
+		},
+		{
+			"hint":"Percent of a circle the chart should consume. Min 25%",
+			"name":"arc_percent",
+			"section":"Presentation",
+			"label":"Arc Percent",
+			"type":"integer"
+		},
+		{
+			"hint":"Percentage to rotate the chart from 0 degrees vertical",
+			"name":"rotation_offset",
+			"section":"Presentation",
+			"label":"Rotation Offset",
+			"type":"integer"
+		},
+		{
+			"hint":"Number of milliseconds it takes to animate the chart",
+			"name":"animation_speed",
+			"section":"Presentation",
+			"label":"Animation Speed",
+			"type":"choice",
+			"choices":[
+				{
+					"label":"0",
+					"value":"0"
+				},
+				{
+					"label":"500",
+					"value":"500"
+				},
+				{
+					"label":"750",
+					"value":"750"
+				},
+				{
+					"label":"1000",
+					"value":"1000"
+				},
+				{
+					"label":"1250",
+					"value":"1250"
+				},
+				{
+					"label":"1500",
+					"value":"1500"
+				}
+			]
+		},
+		{
+			"hint":"Identify the page to target when the chart is clicked. Default is \"list\"",
+			"name":"target_page",
+			"section":"Behavior",
+			"label":"Target Page",
+			"type":"string"
+		},
+		/*
+			LAB 3: This is our new instance option.
+		*/
+		{
+			"hint":"Indicate whether you want to emit an event when the chart is clicked or navigate to another page",
+			"name":"event_driven",
+			"section":"Behavior",
+			"label":"Event Driven",
+			"type":"boolean"
+		}
+		/* END LAB 3 CHANGES */
+	]
     ```
 1. Navigate to **Service Portal** > **Pages**
 1. Location and open the **CMDB Dashboard** page you created previously
