@@ -861,7 +861,12 @@ Learn how to use events to pass data between different widgets on a page.
     div.chartContainer {
 
       max-width: 500px;
+      /*
+          LAB 3: We are removing the "padding" from this CSS.
+      */
       //padding: 8px;
+      /* END LAB 3 CHANGES */
+	  
       margin: auto !important;
 
     }
@@ -869,7 +874,81 @@ Learn how to use events to pass data between different widgets on a page.
     4. Option schema (we are adding an option called Event Driven to the schema): 
     *(Note: this can also be updated in the Widget Editor using the Edit Option Schema as done in LAB 1)*
     ```javascript
-    [{"hint":"Size of the \"donut hole,\" default is 50%","name":"donut_cutout_percent","section":"Presentation","label":"Donut Cutout Percent","type":"integer"},{"hint":"Percent of a circle the chart should consume. Min 25%","name":"arc_percent","section":"Presentation","label":"Arc Percent","type":"integer"},{"hint":"Percentage to rotate the chart from 0 degrees vertical","name":"rotation_offset","section":"Presentation","label":"Rotation Offset","type":"integer"},{"hint":"Number of milliseconds it takes to animate the chart","name":"animation_speed","section":"Presentation","label":"Animation Speed","type":"choice","choices":[{"label":"0","value":"0"},{"label":"500","value":"500"},{"label":"750","value":"750"},{"label":"1000","value":"1000"},{"label":"1250","value":"1250"},{"label":"1500","value":"1500"}]},{"hint":"Identify the page to target when the chart is clicked. Default is \"list\"","name":"target_page","section":"Behavior","label":"Target Page","type":"string"},{"hint":"Indicate whether you want to emit an event when the chart is clicked or navigate to another page","name":"event_driven","section":"Behavior","label":"Event Driven","type":"boolean"}]
+    [
+		{
+			"hint":"Size of the \"donut hole,\" default is 50%",
+			"name":"donut_cutout_percent",
+			"section":"Presentation",
+			"label":"Donut Cutout Percent",
+			"type":"integer"
+		},
+		{
+			"hint":"Percent of a circle the chart should consume. Min 25%",
+			"name":"arc_percent",
+			"section":"Presentation",
+			"label":"Arc Percent",
+			"type":"integer"
+		},
+		{
+			"hint":"Percentage to rotate the chart from 0 degrees vertical",
+			"name":"rotation_offset",
+			"section":"Presentation",
+			"label":"Rotation Offset",
+			"type":"integer"
+		},
+		{
+			"hint":"Number of milliseconds it takes to animate the chart",
+			"name":"animation_speed",
+			"section":"Presentation",
+			"label":"Animation Speed",
+			"type":"choice",
+			"choices":[
+				{
+					"label":"0",
+					"value":"0"
+				},
+				{
+					"label":"500",
+					"value":"500"
+				},
+				{
+					"label":"750",
+					"value":"750"
+				},
+				{
+					"label":"1000",
+					"value":"1000"
+				},
+				{
+					"label":"1250",
+					"value":"1250"
+				},
+				{
+					"label":"1500",
+					"value":"1500"
+				}
+			]
+		},
+		{
+			"hint":"Identify the page to target when the chart is clicked. Default is \"list\"",
+			"name":"target_page",
+			"section":"Behavior",
+			"label":"Target Page",
+			"type":"string"
+		},
+		/*
+			LAB 3: New instance option "Event-Driven"
+			Allows you to select whether you want the widget to emit an event when the chart is clicked or to navigate to another page.
+		*/
+		{
+			"hint":"Indicate whether you want to emit an event when the chart is clicked or navigate to another page",
+			"name":"event_driven",
+			"section":"Behavior",
+			"label":"Event Driven",
+			"type":"boolean"
+		}
+		/* END LAB 3 CHANGES */
+	]
     ```
 1. Navigate to **Service Portal** > **Widgets**
 1. Open the **Combined Donut and Table** widget you created previously
