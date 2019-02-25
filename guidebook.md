@@ -53,20 +53,27 @@ Understand **Widget Dependencies** and how they can be used to provide functiona
       /* populate the 'data' object */
       /* e.g., data.table = $sp.getValue('table'); */
 
+      // Instantiate a container for our chart options. We will get these from the widget instance options.
       data.options = {};
 
+      // Here we define the table, "group by" field, and initial filterr for the chart
       var table = $sp.getValue('table') || options.table;
       var field = $sp.getValue('display_field') || options.display_field;
       var filter = $sp.getValue('filter') || options.filter;
 
       data.currentPage = $sp.getParameter('id');
-
+      
+      // Instantiate axis labels and data containers.
       data.chartLabels = [];
       data.chartData = [];
+      
+      // We will need to make an index of field values to query conditions. We will need this for the click actions on our chart; when you click the chart, we will get the query value to send to the list based on the value of the slice you clicked.
       data.chartLookup = {};
-
+      
+      // We can either specify a target page for our chart, or default to the "list" page
       data.targetPage = options.target_page || 'list';
 
+      // Here we start setting our chart options. Note the defaults in case you do not enter any instance options
       // Animation Speed, default 1000
       data.options.animate = parseInt(options.animation_speed);
       if (isNaN(parseInt(data.options.animate))){
@@ -90,6 +97,7 @@ Understand **Widget Dependencies** and how they can be used to provide functiona
         data.options.chartCircumference = 100;
       }
 
+      // We can use the built-in chart colors settings. This allows you to define colors per table to be used in this or other out-of-the-box rerports
       function getColors(tbl,fld){
         var retArr = [];
         var g_colors = new GlideChartFieldColors(tbl,fld);
@@ -105,6 +113,7 @@ Understand **Widget Dependencies** and how they can be used to provide functiona
         return retArr;
       }
 
+      // If we have defined a table and field for this widget in the instance options, get the data to build the chart
       if (!!table && !!field){
 
 
@@ -123,6 +132,7 @@ Understand **Widget Dependencies** and how they can be used to provide functiona
         var oth = 0;
         var othItems = [];
 
+        // We are setting a hard limit of 12 items for an "other" group. How might you make this configurable?
         while (ga.next() && oth < 12){
           var disp = !!ga.getDisplayValue(field) ? ga.getDisplayValue(field) : '(Empty)';
           data.chartLabels.push(disp);
@@ -132,6 +142,7 @@ Understand **Widget Dependencies** and how they can be used to provide functiona
           oth++;
         }
 
+        // If we have reached our threshold for "Other," then our query should be anything that does not match what we have used so far
         if (oth == 12){
           var gr = new GlideRecord(table);
           gr.addEncodedQuery(filter);
@@ -157,6 +168,7 @@ Understand **Widget Dependencies** and how they can be used to provide functiona
       /* widget controller */
       var c = this;
 
+      // Here we define how the chart legend is displayed. How might you make this configurable?
       c.data.chartLegend = {
         display:true,
         position:'bottom',
@@ -165,6 +177,7 @@ Understand **Widget Dependencies** and how they can be used to provide functiona
         }
       };
 
+      // Here we are building our chart options. This controls the visual display and animations for the chart.
       c.data.chartOptions = {
         rotation:((-0.5 + (-c.data.options.chartRotation)/50)*Math.PI),
         circumference:2*(c.data.options.chartCircumference/100)*Math.PI,
@@ -176,14 +189,20 @@ Understand **Widget Dependencies** and how they can be used to provide functiona
         cutoutPercentage:c.data.options.donut_cutout
       };
 
+      // If we have a lot of text in our legend labels, decrease the font size for better display.
       if (c.data.chartLabels.toString().length > 250){
         c.data.chartLegend.labels.fontSize = 10;
       }
 
+      // Here we define what happens when you click on the chart. The points argument contains information about the area that was clicked, and the evt argument contains information about the event itself. 
       c.onClick = function (points, evt) {
 
+        // Check to see if we have anything in the points array
         if (points.length > 0){
+          // The first member of the points array contains information about the portion of the chart we clicked. The _model property does not contain a "value," just a label which is why we built the "chartLookup" object to index based on display value.  
           var filt = (!!c.data.options.filter ? c.data.options.filter + '^' : '') + c.data.options.display_field + c.data.chartLookup[points[0]._model.label];
+          
+          // Now we build an object for the click target. This will be used to add parameters to the URL location
           var targObj = {
             id: c.data.targetPage,
             table:c.data.options.table,
@@ -196,6 +215,7 @@ Understand **Widget Dependencies** and how they can be used to provide functiona
 
       };
 
+      // We want to watch for any changes, so we will use the recordWatch functionality to keep the chart up to date
       if (!!c.data.options.table){
         spUtil.recordWatch($scope,c.data.options.table,c.data.options.filter);
       }
