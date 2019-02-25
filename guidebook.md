@@ -313,7 +313,9 @@ Learn how to embed widgets and dynamically show or hide them by watching a commo
         <div class="alert alert-danger" ng-if="data.invalid_table">
             ${Table not defined} '{{data.table_label}}'
         </div>
+        <!-- Embed our chart widget, if we weer able to generate one -->
         <sp-widget ng-if="!!data.donutWidget" widget="data.donutWidget"></sp-widget>
+        <!-- Embed our data table widget, if we werer able to generate one -->
         <sp-widget ng-if="data.dataTableWidget" widget="data.dataTableWidget"></sp-widget>
     </div>
     ```
@@ -321,6 +323,9 @@ Learn how to embed widgets and dynamically show or hide them by watching a commo
     ```javascript
     (function(){
         /*  "use strict"; - linter issues */
+        
+        /* Most of the following server script comes from the out-of-the-box data table widget */
+        
         // populate the 'data' object
         var sp_page = $sp.getValue('sp_page');
         var pageGR = new GlideRecord('sp_page');
@@ -359,6 +364,9 @@ Learn how to embed widgets and dynamically show or hide them by watching a commo
         }
         data.table_label = gr.getLabel();
 
+        // This is where our code begins.
+        // First we will build an object to feed in the options for our data table widget.
+        // The options we define for this widget instance are a combination of the options needed for the data table and donut chart
         var widgetParams = {
             table: data.table,
             fields: data.field_list,
@@ -370,23 +378,27 @@ Learn how to embed widgets and dynamically show or hide them by watching a commo
             title: options.title,
             show_breadcrumbs: true
         };
+        
+        // Now we will use the server-sode getWidget method to get a data table widget we can embed
         data.dataTableWidget = $sp.getWidget('widget-data-table', widgetParams);
 
+        // We will do the same for the donut chart widget. Build an object to feed in the options
         var donutParms = {
             table: data.table,
             filter: data.filter,
             display_field: data.display_field
         };
 
-        // Copy options
+        // Copy options from the current widget instance to feed into ourr embedded widget
         for (var opt in options){
             donutParms[opt] = options[opt];
         }
 
+        // Now get the donut chart widget to embed
         data.donutWidget = $sp.getWidget('donut-chart-20',donutParms);
     })();
     ```
-    5. Option schema:
+    5. Option schema (this is a copy of the options we added to the Donut Chart widget):
     ```javascript
     [{"hint":"Size of the \"donut hole,\" default is 50%","name":"donut_cutout_percent","section":"Presentation","label":"Donut Cutout Percent","type":"integer"},{"hint":"Percent of a circle the chart should consume. Min 25%","name":"arc_percent","section":"Presentation","label":"Arc Percent","type":"integer"},{"hint":"Percentage to rotate the chart from 0 degrees vertical","name":"rotation_offset","section":"Presentation","label":"Rotation Offset","type":"integer"},{"hint":"Number of milliseconds it takes to animate the chart","name":"animation_speed","section":"Presentation","label":"Animation Speed","type":"choice","choices":[{"label":"0","value":"0"},{"label":"500","value":"500"},{"label":"750","value":"750"},{"label":"1000","value":"1000"},{"label":"1250","value":"1250"},{"label":"1500","value":"1500"}]},{"hint":"Identify the page to target when the chart is clicked. Default is \"list\"","name":"target_page","section":"Behavior","label":"Target Page","type":"string"}]
     ```
@@ -440,16 +452,17 @@ Okay, we've now got two widgets on the page. Wouldn't it be nice if we could sho
         2. Script:
         ```javascript
         angular.module('css-toggle-switch',[]).directive('toggleSwitch',[function(){
+            // We can define default values in order to makevcertian  directive attributes optional
             var defaults = {
                 labelTrue: 'On',
                 labelFalse: 'Off'
             };
 
             return {
-                restrict: 'E',
+                restrict: 'E', // This directive must be called as an HTML element
                 scope: {
-                    watchVar: '=',
-                    title: '@'
+                    watchVar: '=', // The watch-var attrribute of the element should pass in a variable, expecting an object
+                    title: '@' // the title attribute of the element should resolve to a string
                 },
                 template: '<div>' +
                 '<label class="switch-light" onclick="">' +
@@ -473,6 +486,7 @@ Okay, we've now got two widgets on the page. Wouldn't it be nice if we could sho
                     '}' +
                 '</style>',
                 compile: function(){
+                    // We use the compile method to handle assigning the default values we defined at the start of this directive, if necessary
                     return {
                     pre: function(scope,el,attrs){
                     // Set defaults for labels if nothing passed into the directive
@@ -504,7 +518,7 @@ Okay, we've now got two widgets on the page. Wouldn't it be nice if we could sho
       <div class="alert alert-danger" ng-if="data.invalid_table">
         ${Table not defined} '{{data.table_label}}'
       </div>
-      <!-- Toggle between chart and table view. The toggle will set the value of the showTable variable to true or false when clicked. -->
+      <!-- Toggle between chart and table view. The toggle will set the value of the showTable variable to true or false when clicked. Notice that we are binding the watchVar scope property in our directive to the current scope's showTable property through the watch-var attribute. -->
       <toggle-switch watch-var="showTable" title="Chart or Table" label-true="Table" label-false="Chart"></toggle-switch>
       <!-- If showTable is false, show the chart. Note the use of ng-if here. The angular chartJS code checks on the chart at regular intervals.
             If the chart canvas is hidden when that check is performed there is an error and the next time you try to show the chart it will not render correctly. -->
@@ -522,6 +536,7 @@ Okay, we've now got two widgets on the page. Wouldn't it be nice if we could sho
     2. Client controller:
     ```javascript
     function ($scope, spUtil, $location, spAriaFocusManager) {
+        /* this is the original code copied from the data table widget */
         $scope.$on('data_table.click', function(e, parms){
             var p = $scope.data.page_id || 'form';
             var s = {id: p, table: parms.table, sys_id: parms.sys_id, view: 'sp'};
@@ -529,6 +544,7 @@ Okay, we've now got two widgets on the page. Wouldn't it be nice if we could sho
             spAriaFocusManager.navigateToLink(newURL.url());
         });
 
+        /* Here is our code. We are just defining the "showTable" property for $scope. Defaulting to false. */
         $scope.showTable = false;
     }
     ```
